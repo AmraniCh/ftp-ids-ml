@@ -32,6 +32,13 @@ def test_goodbye_sets_session_end(parser):
     assert event["session_end"] is True
     assert event["abrupt_end"] is False
 
+def test_terminated_sets_session_end(parser):
+    line = 'Sun Jun  7 13:09:41 2026 [pid 1125473] DEBUG: Client "::ffff:203.0.113.x", "Control connection terminated without SSL shutdown."'
+    event = parser.parse_line(line)
+
+    assert event["session_end"] is True
+    assert event["abrupt_end"] is True
+
 def test_garbage_line_returns_none(parser):
     assert parser.parse_line("random garbage") is None
     assert parser.parse_line("") is None
