@@ -76,9 +76,8 @@ class VsftpdParser(BaseParser):
             code = int(first) if first.isdigit() else None
             if code in (530, 430): # reclassify failed logins TODO document this
                 event_type = "FAIL_LOGIN"
-                session_end = code == 221
-
-
+            session_end = code == 221
+        
         """
         timestamp, PID, user, event_type, src_ip, 
                  command, argument, response_code, filename, filesize,
