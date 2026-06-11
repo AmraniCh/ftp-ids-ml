@@ -43,7 +43,21 @@ class VsftpdParser(BaseParser):
         r'"(?P<payload>[^"]+)"'
     )
 
-        
+    _REGEX_TRANSFER = re.compile(
+        r'(?P<dow>\w{3})\s+'
+        r'(?P<month>\w{3})\s+'
+        r'(?P<day>\d+)\s+'
+        r'(?P<time>\S+)\s+'
+        r'(?P<year>\d{4})\s+'
+        r'\[pid\s+(?P<pid>\d+)\]\s+'
+        r'\[(?P<user>[^\]]+)\]\s+'
+        r'(?P<status>OK|FAIL)\s+(?P<direction>DOWNLOAD|UPLOAD):\s+'
+        r'Client\s+"(?P<raw_ip>[^"]+)",\s+'
+        r'"(?P<filepath>[^"]+)"'
+        r'(?:,\s+(?P<bytes>[\d.]+)\s+bytes?)?'
+        r',\s+(?P<speed>[\d.]+)\s*Kbyte/sec'
+    )
+
     def parse_line(self, line: str) -> dict | None:
         m = self._REGEX_CONNECT.search(line)
         if m: return self._build_event(m, line, event_type="CONNECT")
@@ -54,6 +68,16 @@ class VsftpdParser(BaseParser):
             return self._build_event(m, line, event_type="DEBUG",
                          message=m['message'],
                          session_end=is_term, abrupt_end=is_term)
+
+        m = self._REGEX_TRANSFER.search(line)
+        if m:
+            bytes_str = m['bytes']
+            return self._build_event(m, line,
+                event_type=f"{m['status']}_{m['direction']}",
+                filename=m['filepath'].split('/')[-1],
+                filesize=float(bytes_str) if bytes_str else None,
+                speed=float(m['speed'])
+            )
 
         m = self._REGEX_LINE.search(line)
         
