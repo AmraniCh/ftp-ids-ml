@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug ftp-ids CLI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ftp_ids.cli",
+            "args": ["watch", "--daemon", "vsftpd"],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "python": "${workspaceFolder}/venv/bin/python"
+        }
+    ]
+}
