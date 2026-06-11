@@ -11,6 +11,6 @@ class BaseParser(ABC):
         
         returns: timestamp, PID, user, event_type, src_ip, 
                  command, argument, response_code, filename, filesize,
-                 speed, session_end, abrupt_end
+                 speed, session_end, abrupt_end, raw_line
         """
         ...
