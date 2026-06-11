@@ -30,19 +30,6 @@ class VsftpdParser(BaseParser):
         r'"(?P<message>[^"]+)"'
     )
 
-    _REGEX_LINE = re.compile(
-        r'(?P<dow>\w{3})\s+'
-        r'(?P<month>\w{3})\s+'
-        r'(?P<day>\d+)\s+'
-        r'(?P<time>\S+)\s+'
-        r'(?P<year>\d{4})\s+'
-        r'\[pid\s+(?P<pid>\d+)\]\s+'
-        r'(?:\[(?P<user>[^\]]+)\]\s+)?' # optional
-        r'(?P<event_type>FTP command|FTP response):\s+'
-        r'Client\s+"(?P<raw_ip>[^"]+)",\s+'
-        r'"(?P<payload>[^"]+)"'
-    )
-
     _REGEX_TRANSFER = re.compile(
         r'(?P<dow>\w{3})\s+'
         r'(?P<month>\w{3})\s+'
@@ -69,6 +56,19 @@ class VsftpdParser(BaseParser):
         r'(?P<status>OK|FAIL)\s+(?P<action>\w+):\s+'
         r'Client\s+"(?P<raw_ip>[^"]+)"'
         r'(?:,\s+"(?P<detail>[^"]+)")?'
+    )
+
+    _REGEX_LINE = re.compile(
+        r'(?P<dow>\w{3})\s+'
+        r'(?P<month>\w{3})\s+'
+        r'(?P<day>\d+)\s+'
+        r'(?P<time>\S+)\s+'
+        r'(?P<year>\d{4})\s+'
+        r'\[pid\s+(?P<pid>\d+)\]\s+'
+        r'(?:\[(?P<user>[^\]]+)\]\s+)?' # optional
+        r'(?P<event_type>FTP command|FTP response):\s+'
+        r'Client\s+"(?P<raw_ip>[^"]+)"'
+        r'(?:,\s+"(?P<payload>[^"]*)")?'
     )
 
     def parse_line(self, line: str) -> dict | None:
@@ -108,14 +108,14 @@ class VsftpdParser(BaseParser):
 
         cmd = None
         arg = None
-        if event_type == "FTP command":
+        if payload and event_type == "FTP command":
             parts = payload.split(' ', 1)
             cmd = parts[0] 
             arg = parts[1] if len(parts) > 1 else None
 
         code = None
         session_end = False
-        if event_type == "FTP response":
+        if payload and event_type == "FTP response":
             first = payload.split(' ')[0]
             code = int(first) if first.isdigit() else None
             if code in (530, 430): # reclassify failed logins TODO document this
@@ -171,11 +171,9 @@ class VsftpdParser(BaseParser):
             'raw_line':      line,
         }
 
-
     def _parse_ts(self, m: re.Match) -> datetime:
         s = "{} {} {} {}".format(m['day'], m['month'], m['year'], m['time'])
         return datetime.strptime(s, "%d %b %Y %H:%M:%S")
-
 
     def _clean_ip(self, raw: str) -> str:
         return raw.replace('::ffff:', '').replace('::FFFF:', '')
