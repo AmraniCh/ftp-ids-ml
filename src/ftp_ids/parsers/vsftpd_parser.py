@@ -118,8 +118,6 @@ class VsftpdParser(BaseParser):
         if payload and event_type == "FTP response":
             first = payload.split(' ')[0]
             code = int(first) if first.isdigit() else None
-            if code in (530, 430): # reclassify failed logins TODO document this
-                event_type = "FAIL_LOGIN"
             session_end = code == 221
         
         """
