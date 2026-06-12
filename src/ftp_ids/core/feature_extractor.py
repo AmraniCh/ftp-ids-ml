@@ -44,19 +44,14 @@ class FeatureExtractor:
         downloads      = self._count_events(events, 'OK_DOWNLOAD')
         uploads        = self._count_events(events, 'OK_UPLOAD')
         commands       = self._count_events(events, 'FTP command')
-        clt_commands   = self._count_non_null(events, 'command')
-        # responses      = self._count_events(events, 'FTP response') # TODO consider to replace this by pre_auth_commands (see todo.md)
-        empty_commands = commands - clt_commands
 
-        # commands, clt_commands, empty_commands => are not features, they will be used to calculate garbage_cmd_ratio
+        # responses = self._count_events(events, 'FTP response') # TODO consider to replace this by pre_auth_commands (see todo.md)
 
         print('total_events', total_events, sep="=")
         print('failed_logins', failed_logins, sep="=")
         print('downloads', downloads, sep="=")
         print('uploads', uploads, sep="=")
         print('commands', commands, sep="=")
-        print('clt_commands', clt_commands, sep="=")
-        print('empty_commands', empty_commands, sep="=")
 
         unique_commands = self._count_unique(events, 'command')
         unique_files = self._count_unique(events, 'filename')
@@ -66,6 +61,19 @@ class FeatureExtractor:
         print('unique_files', unique_files, sep="=")
         print('night_events', night_events, sep="=")
 
+        # garbage_cmd_ratio
+        clt_commands   = self._count_non_null(events, 'command')
+        empty_commands = commands - clt_commands
+        garbage_commands = empty_commands + sum(
+            1 for e in events
+                if e['command'] and self._is_garbage_command(e['command'])
+        )
+        garbage_cmd_ratio = 0 if commands == 0 else garbage_commands / commands
+
+        print('clt_commands', clt_commands, sep="=")
+        print('empty_commands', empty_commands, sep="=")
+        print('garbage_commands', garbage_commands, sep="=")
+        print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
 
         ...
 
@@ -98,8 +106,8 @@ class FeatureExtractor:
                 count = count + 1
         return count
 
-    # def _is_garbage_command(self, command: str) -> bool:
-    #     ...
+    def _is_garbage_command(self, command: str) -> bool:
+         return command.upper() not in _KNOWN_COMMANDS
 
 
         # def extract_batch(self, sessions: list[dict]):
