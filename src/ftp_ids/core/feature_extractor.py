@@ -39,17 +39,22 @@ class FeatureExtractor:
         events = session['events']
 
         total_events  = session['n_events']
-        failed_logins = self._count_events(events, 'FAIL_LOGIN')
-        downloads     = self._count_events(events, 'OK_DOWNLOAD')
-        uploads       = self._count_events(events, 'OK_UPLOAD')
-        commands      = self._count_events(events, 'FTP command')
-        responses     = self._count_events(events, 'FTP response')
+
+        failed_logins  = self._count_events(events, 'FAIL_LOGIN')
+        downloads      = self._count_events(events, 'OK_DOWNLOAD')
+        uploads        = self._count_events(events, 'OK_UPLOAD')
+        commands       = self._count_events(events, 'FTP command')
+        clt_commands   = self._count_attr_exists(events, 'command')
+        responses      = self._count_events(events, 'FTP response')
+        empty_commands = commands - clt_commands
 
         print('total_events', total_events, sep="=")
         print('failed_logins', failed_logins, sep="=")
         print('downloads', downloads, sep="=")
         print('uploads', uploads, sep="=")
         print('commands', commands, sep="=") # ?
+        print('clt_commands', clt_commands, sep="=") # ?
+        print('empty_commands', empty_commands, sep="=") # ?
         print('responses', responses, sep="=") # ?
 
         unique_commands = self._count_unique(events, 'command')
@@ -59,7 +64,7 @@ class FeatureExtractor:
         print('unique_commands', unique_commands, sep="=")
         print('unique_files', unique_files, sep="=")
         print('night_events', night_events, sep="=")
-        
+
 
         ...
 
@@ -67,21 +72,28 @@ class FeatureExtractor:
     def _count_events(self, events: list[dict], event_type: str) -> int:
         count = 0
         for e in events:
-            if e['event_type'] == event_type: 
+            if e['event_type'] == event_type:
                 count = count + 1
         return count
-    
+
     def _count_unique(self, events: list[dict], subject: str) -> int:
         s = set()
-        for e in events: 
+        for e in events:
             if e[subject]: s.add(e[subject])
         return len(s)
 
-    def _calculate_night_hours(self, events, min: int = 0, max: int = 6):
+    def _calculate_night_hours(self, events, start_hour: int = 0, end_hour: int = 6):
         count = 0
         for ev in events:
             hour = ev['timestamp'].hour
-            if hour >= min and hour < max:
+            if hour >= start_hour and hour < end_hour:
+                count = count + 1
+        return count
+
+    def _count_attr_exists(self, events, attr):
+        count = 0
+        for e in events:
+            if e[attr]:
                 count = count + 1
         return count
 
@@ -95,7 +107,7 @@ class FeatureExtractor:
     #     sessions = [sessions[-1]]
 
     #     for session in enumerate(sessions):
-            
+
     #         for attr in session:
     #             print(attr, sep="=")
 
