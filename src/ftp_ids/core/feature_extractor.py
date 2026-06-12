@@ -45,17 +45,16 @@ class FeatureExtractor:
         uploads        = self._count_events(events, 'OK_UPLOAD')
         commands       = self._count_events(events, 'FTP command')
         clt_commands   = self._count_attr_exists(events, 'command')
-        responses      = self._count_events(events, 'FTP response')
+        # responses      = self._count_events(events, 'FTP response') # TODO consider to replace this by pre_auth_commands (see todo.md)
         empty_commands = commands - clt_commands
 
         print('total_events', total_events, sep="=")
         print('failed_logins', failed_logins, sep="=")
         print('downloads', downloads, sep="=")
         print('uploads', uploads, sep="=")
-        print('commands', commands, sep="=") # ?
-        print('clt_commands', clt_commands, sep="=") # ?
-        print('empty_commands', empty_commands, sep="=") # ?
-        print('responses', responses, sep="=") # ?
+        print('commands', commands, sep="=")
+        print('clt_commands', clt_commands, sep="=")
+        print('empty_commands', empty_commands, sep="=")
 
         unique_commands = self._count_unique(events, 'command')
         unique_files = self._count_unique(events, 'filename')
