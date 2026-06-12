@@ -1,3 +1,6 @@
+from pprint import pprint
+import json
+
 """
 Feature extractor: converts session dicts into numeric feature vectors for the ML detector.
 
@@ -30,17 +33,71 @@ _KNOWN_COMMANDS = {
 
 class FeatureExtractor:
 
-    def extract(self, session: dict) -> dict:
+    def extract(self, session: dict) -> dict | None:
         """One session -> {feature_name: numeric value}."""
 
+        events = session['events']
+
+        total_events  = session['n_events']
+        failed_logins = self._count_events(events, 'FAIL_LOGIN')
+        downloads     = self._count_events(events, 'OK_DOWNLOAD')
+        uploads       = self._count_events(events, 'OK_UPLOAD')
+        commands      = self._count_events(events, 'FTP command')
+        responses     = self._count_events(events, 'FTP response')
+
+        print('total_events', total_events, sep="=")
+        print('failed_logins', failed_logins, sep="=")
+        print('downloads', downloads, sep="=")
+        print('uploads', uploads, sep="=")
+        print('commands', commands, sep="=") # ?
+        print('responses', responses, sep="=") # ?
+
+        unique_commands = self._count_unique(events, 'command')
+        unique_files = self._count_unique(events, 'filename')
+        night_events = self._calculate_night_hours(events)
+
+        print('unique_commands', unique_commands, sep="=")
+        print('unique_files', unique_files, sep="=")
+        print('night_events', night_events, sep="=")
+        
+
         ...
 
-    def extract_batch(self, sessions: list[dict]) -> list[dict]:
-        """Map extract over sessions."""
-        ...
 
     def _count_events(self, events: list[dict], event_type: str) -> int:
-        ...
+        count = 0
+        for e in events:
+            if e['event_type'] == event_type: 
+                count = count + 1
+        return count
+    
+    def _count_unique(self, events: list[dict], subject: str) -> int:
+        s = set()
+        for e in events: 
+            if e[subject]: s.add(e[subject])
+        return len(s)
 
-    def _is_garbage_command(self, command: str) -> bool:
-        ...
+    def _calculate_night_hours(self, events, min: int = 0, max: int = 6):
+        count = 0
+        for ev in events:
+            hour = ev['timestamp'].hour
+            if hour >= min and hour < max:
+                count = count + 1
+        return count
+
+    # def _is_garbage_command(self, command: str) -> bool:
+    #     ...
+
+
+        # def extract_batch(self, sessions: list[dict]):
+    #     """Map extract over sessions."""
+
+    #     sessions = [sessions[-1]]
+
+    #     for session in enumerate(sessions):
+            
+    #         for attr in session:
+    #             print(attr, sep="=")
+
+
+    #     ...
