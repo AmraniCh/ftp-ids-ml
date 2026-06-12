@@ -44,9 +44,11 @@ class FeatureExtractor:
         downloads      = self._count_events(events, 'OK_DOWNLOAD')
         uploads        = self._count_events(events, 'OK_UPLOAD')
         commands       = self._count_events(events, 'FTP command')
-        clt_commands   = self._count_attr_exists(events, 'command')
+        clt_commands   = self._count_non_null(events, 'command')
         # responses      = self._count_events(events, 'FTP response') # TODO consider to replace this by pre_auth_commands (see todo.md)
         empty_commands = commands - clt_commands
+
+        # commands, clt_commands, empty_commands => are not features, they will be used to calculate garbage_cmd_ratio
 
         print('total_events', total_events, sep="=")
         print('failed_logins', failed_logins, sep="=")
@@ -89,7 +91,7 @@ class FeatureExtractor:
                 count = count + 1
         return count
 
-    def _count_attr_exists(self, events, attr):
+    def _count_non_null(self, events, attr):
         count = 0
         for e in events:
             if e[attr]:
