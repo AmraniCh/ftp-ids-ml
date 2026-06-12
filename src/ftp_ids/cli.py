@@ -18,6 +18,7 @@ def main():
     parse_p.add_argument("--log", default=config.LOGS_PATH, help="Path to FTP log file")
 
     sessions_p = subparsers.add_parser("sessions", help="Build and show sessions from a log")
+    sessions_p.add_argument("--show", action="store_true", help="Dump full session dicts (including events)")
     sessions_p.add_argument("--log", default=config.LOGS_PATH)
 
     args = parser.parse_args()
@@ -29,7 +30,7 @@ def main():
         run_parse(args.log)
 
     if args.command == "sessions":
-        run_sessions(args.log)
+        run_sessions(args.log, args.show)
 
 def run_parse(log_path: str, output=True):
     p = VsftpdParser()
@@ -41,14 +42,19 @@ def run_parse(log_path: str, output=True):
             else: failed.append(line)
             if output: pprint(event if event else line)
 
-    print(f"parsed : {len(events)}")
-    print(f"failed : {len(failed)}")
+    if output:
+        print(f"parsed : {len(events)}")
+        print(f"failed : {len(failed)}")
 
     return events
 
-def run_sessions(log_path):
+def run_sessions(log_path, show: bool = False):
     events = run_parse(log_path, output=False)
     sessions = build_sessions(events)
+
+    if show:
+        pprint(sessions)
+        return
     
     print(f"Sessions: {len(sessions)}\n")
     print(f"{'SRC_IP':<16} {'USER':<20} {'END':<8} {'EVENTS':>6}  {'START':<19}  {'END':<19}")
