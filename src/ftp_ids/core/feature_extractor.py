@@ -24,10 +24,30 @@ FEATURE_NAMES = [
 
 # whitelist for the garbage_cmd_ratio feature
 _KNOWN_COMMANDS = {
-    "USER", "PASS", "QUIT", "AUTH", "OPTS", "FEAT", "TYPE", "STRU",
-    "PBSZ", "PROT", "CWD", "MKD", "RMD", "DELE", "RNFR", "RNTO",
-    "EPSV", "PASV", "PORT", "EPRT", "RETR", "STOR", "LIST", "NLST",
-    "SIZE", "MDTM", "REST", "ABOR", "NOOP", "SYST", "PWD", "SITE",
+    # RFC 959 core
+    "ABOR", "ACCT", "ALLO", "APPE", "CDUP", "CWD", "DELE", "HELP",
+    "LIST", "MKD", "MODE", "NLST", "NOOP", "PASS", "PASV", "PORT",
+    "PWD", "QUIT", "REIN", "REST", "RETR", "RMD", "RNFR", "RNTO",
+    "SITE", "SMNT", "STAT", "STOR", "STOU", "STRU", "SYST", "TYPE",
+    "USER",
+    # RFC 2228 security
+    "ADAT", "AUTH", "CCC", "CONF", "ENC", "MIC", "PBSZ", "PROT",
+    # RFC 2389 feature negotiation
+    "FEAT", "OPTS",
+    # RFC 2428 IPv6/NAT
+    "EPRT", "EPSV",
+    # RFC 1639
+    "LPRT", "LPSV",
+    # RFC 2640
+    "LANG",
+    # RFC 3659 extensions
+    "MDTM", "MLSD", "MLST", "SIZE",
+    # RFC 7151
+    "HOST",
+    # legacy RFC 775 X-variants
+    "XCUP", "XCWD", "XMKD", "XPWD", "XRMD",
+    # common non-RFC extensions
+    "MFMT", "MFCT", "MFF",
 }
 
 
@@ -47,19 +67,9 @@ class FeatureExtractor:
 
         # responses = self._count_events(events, 'FTP response') # TODO consider to replace this by pre_auth_commands (see todo.md)
 
-        print('total_events', total_events, sep="=")
-        print('failed_logins', failed_logins, sep="=")
-        print('downloads', downloads, sep="=")
-        print('uploads', uploads, sep="=")
-        print('commands', commands, sep="=")
-
         unique_commands = self._count_unique(events, 'command')
         unique_files = self._count_unique(events, 'filename')
         night_events = self._calculate_night_hours(events)
-
-        print('unique_commands', unique_commands, sep="=")
-        print('unique_files', unique_files, sep="=")
-        print('night_events', night_events, sep="=")
 
         # garbage_cmd_ratio
         clt_commands   = self._count_non_null(events, 'command')
@@ -70,9 +80,23 @@ class FeatureExtractor:
         )
         garbage_cmd_ratio = 0 if commands == 0 else garbage_commands / commands
 
+
+        # ── intermediates (not model features) ──
+        print("-- intermediates --")
+        print('commands', commands, sep="=")
         print('clt_commands', clt_commands, sep="=")
         print('empty_commands', empty_commands, sep="=")
         print('garbage_commands', garbage_commands, sep="=")
+
+        # ── features ──
+        print("-- features --")
+        print('total_events', total_events, sep="=")
+        print('failed_logins', failed_logins, sep="=")
+        print('downloads', downloads, sep="=")
+        print('uploads', uploads, sep="=")
+        print('unique_commands', unique_commands, sep="=")
+        print('unique_files', unique_files, sep="=")
+        print('night_events', night_events, sep="=")
         print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
 
         ...
