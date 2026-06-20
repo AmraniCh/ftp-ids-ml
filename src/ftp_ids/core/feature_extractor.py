@@ -86,6 +86,8 @@ class FeatureExtractor:
         speeds = [e['speed'] for e in events if e['speed']]
         avg_speed = sum(speeds) / len(speeds) if speeds else 0.0
 
+        session_duration = (session['end_time'] - session['start_time']).total_seconds()
+
         # intermediates just for debugging
         print("-- intermediates --")
         print('commands', commands, sep="=")
@@ -108,6 +110,7 @@ class FeatureExtractor:
         print('is_auth', session['is_auth'], sep="=")
         print('total_bytes', total_bytes, sep="=")
         print('avg_speed', avg_speed, sep="=")
+        print('session_duration', session_duration, sep="=")
 
         ...
 
