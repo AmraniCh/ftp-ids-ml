@@ -1,16 +1,4 @@
-"""
-Session builder — groups parsed events into sessions.
-
-Strategy:
-  1. Group events by src_ip.
-  2. Within an IP, walk events chronologically:
-       - a session_end event closes the current session
-       - a time gap > SESSION_GAP_MINUTES closes it too
-  3. The session's user = first non-None user seen in its events.
-
-This handles vsftpd splitting one logical session across multiple PIDs,
-and the fact that the [user] tag is absent before login.
-"""
+from pprint import pprint
 
 from collections import defaultdict
 from datetime import timedelta
@@ -18,8 +6,7 @@ from datetime import timedelta
 SESSION_GAP_MINUTES = 5
 
 def build_sessions(events: list[dict]) -> list[dict]:
-    """Group parsed events into session dicts."""
-    # 1. group events by source IP
+    # group events by source ip
     by_ip: dict[str, list[dict]] = defaultdict(list)
     for event in events:
         by_ip[event["src_ip"]].append(event)
@@ -27,7 +14,7 @@ def build_sessions(events: list[dict]) -> list[dict]:
     sessions = []
     gap = timedelta(minutes=SESSION_GAP_MINUTES)
 
-    # 2. walk each IP's events chronologically
+    # walk each IP events chronologically
     for src_ip, ip_events in by_ip.items():
         ip_events.sort(key=lambda e: e["timestamp"])
 
@@ -36,19 +23,18 @@ def build_sessions(events: list[dict]) -> list[dict]:
             if current:
                 time_gap = event["timestamp"] - current[-1]["timestamp"]
                 if time_gap > gap:
-                    # too long since last event -> previous session is over
                     sessions.append(_make_session(src_ip, current))
                     current = []
 
             current.append(event)
 
             if event["session_end"]:
-                # explicit boundary (221 Goodbye or terminated)
+                # explicit boundary '221 Goodbye or terminated'
                 sessions.append(_make_session(src_ip, current))
                 current = []
 
         if current:
-            # leftover events with no explicit end (still open / log cut off)
+            # no explicit boundry (still open ...)
             sessions.append(_make_session(src_ip, current))
 
     return sessions
@@ -58,8 +44,11 @@ def _make_session(src_ip: str, events: list[dict]) -> dict:
     """Build one session dict from its ordered events."""
     first, last = events[0], events[-1]
 
-    # user = first non-None user seen
+    # add user for first events followed by an authentified user or Anonymous
     user = next((e["user"] for e in events if e["user"]), None)
+
+    # is auth
+    is_auth = any(e['event_type'] == 'OK_LOGIN' for e in events)
 
     # how the session ended
     if last["abrupt_end"]:
@@ -72,6 +61,7 @@ def _make_session(src_ip: str, events: list[dict]) -> dict:
     return {
         "src_ip":     src_ip,
         "user":       user,
+        "is_auth":    is_auth,
         "start_time": first["timestamp"],
         "end_time":   last["timestamp"],
         "end_type":   end_type,

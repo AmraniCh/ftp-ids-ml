@@ -19,7 +19,7 @@ FEATURE_NAMES = [
     "total_bytes", "avg_speed_kbps", "session_duration",
     "fail_ratio", "night_ratio", "upload_ratio",
     "bytes_per_file", "garbage_cmd_ratio",
-    "abrupt_disconnect",
+    "abrupt_disconnect", "is_auth"
 ]
 
 # whitelist for the garbage_cmd_ratio feature
@@ -80,15 +80,14 @@ class FeatureExtractor:
         )
         garbage_cmd_ratio = 0 if commands == 0 else garbage_commands / commands
 
-
-        # ── intermediates (not model features) ──
+        # intermediates
         print("-- intermediates --")
         print('commands', commands, sep="=")
         print('clt_commands', clt_commands, sep="=")
         print('empty_commands', empty_commands, sep="=")
         print('garbage_commands', garbage_commands, sep="=")
 
-        # ── features ──
+        # features
         print("-- features --")
         print('total_events', total_events, sep="=")
         print('failed_logins', failed_logins, sep="=")
@@ -98,6 +97,8 @@ class FeatureExtractor:
         print('unique_files', unique_files, sep="=")
         print('night_events', night_events, sep="=")
         print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
+        print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
+        print('is_auth', session['is_auth'], sep="=")
 
         ...
 
