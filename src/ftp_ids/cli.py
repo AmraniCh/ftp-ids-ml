@@ -3,8 +3,7 @@ from ftp_ids import config
 from ftp_ids.parsers.vsftpd_parser import VsftpdParser
 from pprint import pprint
 from ftp_ids.core.session_builder import build_sessions
-from ftp_ids.config import DAEMON_LOG_PATHS
-
+from ftp_ids.core.feature_extractor import FeatureExtractor
 
 def main():
     parser = argparse.ArgumentParser(
@@ -18,9 +17,12 @@ def main():
     parse_p.add_argument("--log", default=config.LOGS_PATH, help="Path to FTP log file")
 
     sessions_p = subparsers.add_parser("sessions", help="Build and show sessions from a log")
-    sessions_p.add_argument("--show", action="store_true", help="Dump full session dicts (including events)")
     sessions_p.add_argument("--log", default=config.LOGS_PATH)
+    sessions_p.add_argument("--show", action="store_true", help="Dump full session dicts (including events)")
 
+    extract_p = subparsers.add_parser("extract", help="Extract features from sessions")
+    extract_p.add_argument("--log", default=config.LOGS_PATH)
+    
     args = parser.parse_args()
 
     if args.log is None:
@@ -32,7 +34,10 @@ def main():
     if args.command == "sessions":
         run_sessions(args.log, args.show)
 
-def run_parse(log_path: str, output=True):
+    if args.command == "extract":
+        run_extract(args.log)
+
+def run_parse(log_path: str, output=True) :
     p = VsftpdParser()
     events, failed = [], []
     with open(log_path, "r") as f: # TODO consider errors="replace" ?
@@ -62,6 +67,28 @@ def run_sessions(log_path, show: bool = False):
     for s in sessions:
         print(f"{s['src_ip']:<16} {s['user'] or '-':<20} {s['end_type']:<8} "
               f"{s['n_events']:>6}  {s['start_time']}  {s['end_time']}")
+        
+    return sessions
+
+# features extracting
+def run_extract(log_path, show: bool = False):
+    events = run_parse(log_path, output=False)
+    sessions = build_sessions(events)
+
+    if not sessions: 
+        return []
+
+    # pprint(sessions)
+
+    fe = FeatureExtractor()
+    fe.extract(sessions[0])
+    return
+
+    for se in sessions:
+        print(se['src_ip'], end=": \n\n")
+        fe.extract(se)
+        print('_' * 10)
+
 
 if __name__ == "__main__":
     main()
