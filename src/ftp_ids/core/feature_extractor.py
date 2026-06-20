@@ -80,6 +80,9 @@ class FeatureExtractor:
         )
         garbage_cmd_ratio = 0 if commands == 0 else garbage_commands / commands
 
+        # aggegation
+        total_bytes = sum(e['filesize'] for e in events if e['filesize'])
+
         # intermediates
         print("-- intermediates --")
         print('commands', commands, sep="=")
@@ -99,6 +102,8 @@ class FeatureExtractor:
         print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
         print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
         print('is_auth', session['is_auth'], sep="=")
+        
+        print('total_bytes', total_bytes, sep="=")
 
         ...
 
