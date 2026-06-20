@@ -16,7 +16,7 @@ Each feature is motivated by an attack behavior:
 FEATURE_NAMES = [
     "total_events", "failed_logins", "downloads", "uploads",
     "unique_commands", "unique_files", "night_events",
-    "total_bytes", "avg_speed_kbps", "session_duration",
+    "total_bytes", "avg_speed", "session_duration",
     "fail_ratio", "night_ratio", "upload_ratio",
     "bytes_per_file", "garbage_cmd_ratio",
     "abrupt_disconnect", "is_auth"
@@ -80,15 +80,19 @@ class FeatureExtractor:
         )
         garbage_cmd_ratio = 0 if commands == 0 else garbage_commands / commands
 
-        # aggegation
+        # aggegation features
         total_bytes = sum(e['filesize'] for e in events if e['filesize'])
 
-        # intermediates
+        speeds = [e['speed'] for e in events if e['speed']]
+        avg_speed = sum(speeds) / len(speeds) if speeds else 0.0
+
+        # intermediates just for debugging
         print("-- intermediates --")
         print('commands', commands, sep="=")
         print('clt_commands', clt_commands, sep="=")
         print('empty_commands', empty_commands, sep="=")
         print('garbage_commands', garbage_commands, sep="=")
+        print('speeds', speeds, sep="=")
 
         # features
         print("-- features --")
@@ -102,8 +106,8 @@ class FeatureExtractor:
         print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
         print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
         print('is_auth', session['is_auth'], sep="=")
-        
         print('total_bytes', total_bytes, sep="=")
+        print('avg_speed', avg_speed, sep="=")
 
         ...
 
