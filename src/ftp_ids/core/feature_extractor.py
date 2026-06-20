@@ -88,6 +88,12 @@ class FeatureExtractor:
 
         session_duration = (session['end_time'] - session['start_time']).total_seconds()
 
+        # ratios
+        fail_ratio   = failed_logins / total_events
+        night_ratio  = night_events / total_events
+        upload_ratio = uploads / total_events
+        bytes_per_file = total_bytes / (unique_files if unique_files != 0 else 1)
+
         # intermediates just for debugging
         print("-- intermediates --")
         print('commands', commands, sep="=")
@@ -111,6 +117,10 @@ class FeatureExtractor:
         print('total_bytes', total_bytes, sep="=")
         print('avg_speed', avg_speed, sep="=")
         print('session_duration', session_duration, sep="=")
+        print('fail_ratio', fail_ratio, sep="=")
+        print('night_ratio', night_ratio, sep="=")
+        print('upload_ratio', upload_ratio, sep="=")
+        print('bytes_per_file', bytes_per_file, sep="=")
 
         ...
 
