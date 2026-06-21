@@ -146,15 +146,5 @@ class FeatureExtractor:
          return command.upper() not in _KNOWN_COMMANDS
 
 
-        # def extract_batch(self, sessions: list[dict]):
-    #     """Map extract over sessions."""
-
-    #     sessions = [sessions[-1]]
-
-    #     for session in enumerate(sessions):
-
-    #         for attr in session:
-    #             print(attr, sep="=")
-
-
-    #     ...
+    def extract_batch(self, sessions: list[dict]):
+        return [self.extract(session) for session in sessions]

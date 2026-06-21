@@ -60,14 +60,14 @@ def run_sessions(log_path, show: bool = False):
     if show:
         pprint(sessions)
         return
-    
+      
     print(f"Sessions: {len(sessions)}\n")
     print(f"{'SRC_IP':<16} {'USER':<20} {'END':<8} {'EVENTS':>6}  {'START':<19}  {'END':<19}")
     
     for s in sessions:
         print(f"{s['src_ip']:<16} {s['user'] or '-':<20} {s['end_type']:<8} "
               f"{s['n_events']:>6}  {s['start_time']}  {s['end_time']}")
-        
+
     return sessions
 
 # features extracting
@@ -78,17 +78,9 @@ def run_extract(log_path, show: bool = False):
     if not sessions: 
         return []
 
-    # pprint(sessions)
-
     fe = FeatureExtractor()
-    fe.extract(sessions[0])
-    return
-
-    for se in sessions:
-        print(se['src_ip'], end=": \n\n")
-        fe.extract(se)
-        print('_' * 10)
-
+    featues = fe.extract_batch(sessions)
+    pprint(featues)
 
 if __name__ == "__main__":
     main()
