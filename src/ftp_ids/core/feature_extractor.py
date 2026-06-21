@@ -17,7 +17,7 @@ FEATURE_NAMES = [
     "total_events", "failed_logins", "downloads", "uploads",
     "unique_commands", "unique_files", "night_events",
     "total_bytes", "avg_speed", "session_duration",
-    "fail_ratio", "night_ratio", "upload_ratio",
+    "fail_ratio", "night_ratio", "transfer_ratio",
     "bytes_per_file", "garbage_cmd_ratio",
     "abrupt_disconnect", "is_auth"
 ]
@@ -91,7 +91,7 @@ class FeatureExtractor:
         # ratios
         fail_ratio   = failed_logins / total_events if total_bytes else 0
         night_ratio  = night_events / total_events if total_events else 0
-        upload_ratio = uploads / total_events if total_events else 0
+        transfer_ratio = (uploads + downloads) / total_events if total_events else 0
         bytes_per_file = total_bytes / unique_files if unique_files else total_bytes
 
         # intermediates just for debugging
@@ -119,7 +119,7 @@ class FeatureExtractor:
         print('session_duration', session_duration, sep="=")
         print('fail_ratio', fail_ratio, sep="=")
         print('night_ratio', night_ratio, sep="=")
-        print('upload_ratio', upload_ratio, sep="=")
+        print('transfer_ratio', transfer_ratio, sep="=")
         print('bytes_per_file', bytes_per_file, sep="=")
 
         ...
