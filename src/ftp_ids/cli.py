@@ -7,6 +7,7 @@ from ftp_ids.core.feature_extractor import FeatureExtractor
 from ftp_ids.core.detector import Detector
 from ftp_ids.config import MODEL_PATH, CONTAMINATION
 import pandas as pd
+import time
 
 def main():
     parser = argparse.ArgumentParser(
@@ -28,6 +29,10 @@ def main():
     
     train_p = subparsers.add_parser("train", help="Train the model on the spcified FTP logs")
     train_p.add_argument("--log", default=config.LOGS_PATH)
+
+    watch_p = subparsers.add_parser("watch", description="Watch the specified log and score session in live")
+    watch_p.add_argument("--log", default=config.LOGS_PATH)
+    watch_p.add_argument("--threshold", type=float, default=0.7) # threshold
     
 
     args = parser.parse_args()
@@ -46,6 +51,11 @@ def main():
 
     if args.command == "train":
         run_train(args.log)
+
+    if args.command == "watch":
+        run_watch(args.log, args.threshold)
+
+        
 
 def run_parse(log_path: str, output=True) :
     p = VsftpdParser()
@@ -104,12 +114,56 @@ def run_train(log_path):
     print(df)
     
     dt = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
-    dt.load_model()
     dt.train(sessions)
     
     scores = dt.score_batch(sessions)
     print("scores: ", scores)
 
+def run_watch(log_path: str, threshold: float):
+    def tail(path):
+        with open(path, "r") as f:
+            f.seek(0, 2) 
+            while True:
+                line = f.readline()
+                if not line:
+                    time.sleep(0.3)
+                    continue
+                yield line
+
+    parser = VsftpdParser()
+    detector = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
+    if not detector.load_model():
+        print("No model. Train first: ftp-ids train")
+        return
+
+    print(f"watching {log_path}, threshold={threshold}")
+
+    buffer = []  
+    seen_session_keys = set()
+
+    for line in tail(log_path):
+        event = parser.parse_line(line)
+        if not event:
+            continue
+        buffer.append(event)
+
+        if not event["session_end"]:
+            continue
+
+        sessions = build_sessions(buffer)
+
+        for s in sessions:
+            key = (s["src_ip"], s["start_time"])
+            if key in seen_session_keys:
+                continue
+            score = detector.score(s)
+            seen_session_keys.add(key)
+
+            flag = "ALERT" if score >= threshold else "  ok"
+            print(f"{flag}  {score:.2f}  {s['src_ip']:<16} "
+                  f"user={s['user'] or '-':<20} "
+                  f"events={s['n_events']}")
+    
 
 if __name__ == "__main__":
     main()
