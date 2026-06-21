@@ -4,6 +4,8 @@ from ftp_ids.parsers.vsftpd_parser import VsftpdParser
 from pprint import pprint
 from ftp_ids.core.session_builder import build_sessions
 from ftp_ids.core.feature_extractor import FeatureExtractor
+from ftp_ids.core.detector import Detector
+from ftp_ids.config import MODEL_PATH, CONTAMINATION
 
 def main():
     parser = argparse.ArgumentParser(
@@ -23,6 +25,10 @@ def main():
     extract_p = subparsers.add_parser("extract", help="Extract features from sessions")
     extract_p.add_argument("--log", default=config.LOGS_PATH)
     
+    train_p = subparsers.add_parser("train", help="Train the model on the spcified FTP logs")
+    train_p.add_argument("--log", default=config.LOGS_PATH)
+    
+
     args = parser.parse_args()
 
     if args.log is None:
@@ -36,6 +42,9 @@ def main():
 
     if args.command == "extract":
         run_extract(args.log)
+
+    if args.command == "train":
+        run_train(args.log)
 
 def run_parse(log_path: str, output=True) :
     p = VsftpdParser()
@@ -81,6 +90,14 @@ def run_extract(log_path, show: bool = False):
     fe = FeatureExtractor()
     featues = fe.extract_batch(sessions)
     pprint(featues)
+
+
+def run_train(log_path):
+    events = run_parse(log_path, output=False)
+    sessions = build_sessions(events)
+    dt = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
+    dt.train(sessions)
+
 
 if __name__ == "__main__":
     main()
