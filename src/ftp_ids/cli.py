@@ -128,10 +128,16 @@ def run_train(log_path):
     dt = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
     dt.train(sessions)
     
-    scores = dt.score_batch(sessions)
-    print("Scores: ")
-    for i, score in enumerate(scores):
-        print(f"{i}: {score}")
+    storage = Storage()
+    # TODO threshild is hardcoded here
+    for i,s in enumerate(sessions):
+        score = dt.score(s)
+        if score >= 0.7:
+            features = dt.extractor.extract(s)
+            storage.append_alert(s, score, features)
+            print(f"{i}: ALERT  {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
+        else:
+            print(f"{i}: ok    {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
 
 
 def run_watch(log_path: str, threshold: float):
@@ -178,9 +184,9 @@ def run_watch(log_path: str, threshold: float):
             if score >= threshold:
                 features = detector.extractor.extract(s)
                 storage.append_alert(s, score, features)
-                print(f"ALERT  {score:.2f}  {s['src_ip']:<16} user={s['user'] or '-'}")
+                print(f"ALERT  {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
             else:
-                print(f"ok    {score:.2f}  {s['src_ip']:<16} user={s['user'] or '-'}")
+                print(f"ok    {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
     
 
 def run_correct():
