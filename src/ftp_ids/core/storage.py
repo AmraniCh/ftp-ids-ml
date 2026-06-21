@@ -31,6 +31,10 @@ class Storage:
             return pd.DataFrame()
         return pd.read_csv(config.ALERTS_PATH)
 
+    def clear_alerts(self):
+        if Path(config.ALERTS_PATH).exists():
+            Path(config.ALERTS_PATH).unlink()
+
     def add_to_clean_pool(self, rows):
         needed = ["src_ip", "start_time", *FEATURE_NAMES]
         rows = rows[needed].copy()
@@ -53,6 +57,10 @@ class Storage:
         if not Path(config.CLEAN_POOL_PATH).exists():
             return pd.DataFrame(columns=["src_ip", "start_time", *FEATURE_NAMES])
         return pd.read_csv(config.CLEAN_POOL_PATH)
+
+    def clear_clean_pool(self):
+        if Path(config.CLEAN_POOL_PATH).exists():
+            Path(config.CLEAN_POOL_PATH).unlink()
 
     def _append_row(self, path, row, fieldnames):
         file_exists = Path(path).exists()

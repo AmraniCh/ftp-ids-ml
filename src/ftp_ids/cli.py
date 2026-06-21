@@ -129,6 +129,8 @@ def run_train(log_path):
     dt.train(sessions)
     
     storage = Storage()
+    storage.clear_alerts()
+    storage.clear_clean_pool()
     # TODO threshild is hardcoded here
     for i,s in enumerate(sessions):
         score = dt.score(s)
@@ -224,7 +226,6 @@ def run_correct():
 
 def run_retrain(log_path: str):
     storage = Storage()
-
     events = run_parse(log_path, output=False)
     sessions = build_sessions(events)
     detector = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
