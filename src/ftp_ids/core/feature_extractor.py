@@ -146,5 +146,5 @@ class FeatureExtractor:
          return command.upper() not in _KNOWN_COMMANDS
 
 
-    def extract_batch(self, sessions: list[dict]):
+    def extract_batch(self, sessions):
         return [self.extract(session) for session in sessions]
