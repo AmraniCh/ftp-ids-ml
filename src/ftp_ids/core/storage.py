@@ -48,6 +48,11 @@ class Storage:
 
         pool.to_csv(config.CLEAN_POOL_PATH, index=False)
         return len(pool)
+    
+    def load_clean_pool(self):
+        if not Path(config.CLEAN_POOL_PATH).exists():
+            return pd.DataFrame(columns=["src_ip", "start_time", *FEATURE_NAMES])
+        return pd.read_csv(config.CLEAN_POOL_PATH)
 
     def _append_row(self, path, row, fieldnames):
         file_exists = Path(path).exists()

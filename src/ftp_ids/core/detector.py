@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.pipeline import Pipeline
+from ftp_ids.core.storage import Storage
 
 class Detector:
 
@@ -31,9 +32,7 @@ class Detector:
     def train(self, sessions):
         features = self.extractor.extract_batch(sessions)
         df = pd.DataFrame(features)
-        X = df[self.feature_names] 
-
-        pprint(df)       
+        X = df[self.feature_names]      
 
         # TODO consider to test with dynamic contamination based on session events length
         self.pipeline = Pipeline([
@@ -48,7 +47,6 @@ class Detector:
         self.pipeline.fit(X)
         
         raw_scores = -self.pipeline.decision_function(X)
-        print("raw_scores", raw_scores)
         self.score_scaler = MinMaxScaler(feature_range=(0, 1))
         self.score_scaler.fit(raw_scores.reshape(-1, 1))
     
@@ -78,5 +76,28 @@ class Detector:
     
     def score_batch(self, sessions):
         return [self.score(session) for session in sessions]
-    
 
+    def train_on_features(self, X: pd.DataFrame):
+        X = X[self.feature_names]
+
+        self.pipeline = Pipeline([
+            ("scaler", StandardScaler()),
+            ("iso_forest", IsolationForest(
+                n_estimators=200,
+                contamination=self.contamination,
+                random_state=42,
+            )),
+        ])
+
+        self.pipeline.fit(X)
+
+        raw_scores = -self.pipeline.decision_function(X)
+        self.score_scaler = MinMaxScaler(feature_range=(0, 1))
+        self.score_scaler.fit(raw_scores.reshape(-1, 1))
+
+        joblib.dump({
+            "pipeline": self.pipeline,
+            "score_scaler": self.score_scaler,
+            "features": self.feature_names,
+        }, self.model_path)
+        print(f"Model retrained and saved to {self.model_path}")

@@ -3,7 +3,7 @@ from ftp_ids import config
 from ftp_ids.parsers.vsftpd_parser import VsftpdParser
 from pprint import pprint
 from ftp_ids.core.session_builder import build_sessions
-from ftp_ids.core.feature_extractor import FeatureExtractor
+from ftp_ids.core.feature_extractor import FeatureExtractor, FEATURE_NAMES
 from ftp_ids.core.detector import Detector
 from ftp_ids.config import MODEL_PATH, CONTAMINATION
 import pandas as pd
@@ -37,6 +37,9 @@ def main():
     
     correct_p = subparsers.add_parser("correct", help="Apply admin labels from alerts.csv to the clean pool")
 
+    retrain_p = subparsers.add_parser("retrain", help="Rebuild model with original log + clean pool")
+    retrain_p.add_argument("--log", default=config.LOGS_PATH)
+
     args = parser.parse_args()
 
     
@@ -60,6 +63,9 @@ def main():
 
         if args.command == "watch":
             run_watch(args.log, args.threshold)
+
+        if args.command == "retrain":
+            run_retrain(args.log)
 
 
 
@@ -207,6 +213,31 @@ def run_correct():
     new_size = storage.add_to_clean_pool(false_positives)
     print(f"Clean pool now has {new_size} session(s).")
     print(f"Run: ftp-ids retrain")
+
+def run_retrain(log_path: str):
+    storage = Storage()
+
+    events = run_parse(log_path, output=False)
+    sessions = build_sessions(events)
+    detector = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
+    original_features = pd.DataFrame(detector.extractor.extract_batch(sessions))
+
+    clean_pool = storage.load_clean_pool()
+
+    # combine
+    if len(clean_pool) > 0:
+        combined = pd.concat([
+            original_features[FEATURE_NAMES],
+            clean_pool[FEATURE_NAMES],
+        ], ignore_index=True)
+        print(f"Training on {len(original_features)} log sessions "
+            f"+ {len(clean_pool)} confirmed-normal from clean pool")
+    else:
+        combined = original_features[FEATURE_NAMES]
+        print(f"No clean pool yet — training on {len(combined)} sessions")
+
+    detector.train_on_features(combined)
+
 
     
 if __name__ == "__main__":
