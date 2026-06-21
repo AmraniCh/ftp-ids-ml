@@ -47,11 +47,10 @@ class Detector:
 
         self.pipeline.fit(X)
         
-        raw_scores = self.pipeline.decision_function(X)
+        raw_scores = -self.pipeline.decision_function(X)
         print("raw_scores", raw_scores)
         self.score_scaler = MinMaxScaler(feature_range=(0, 1))
         self.score_scaler.fit(raw_scores.reshape(-1, 1))
-        # print(self.score_scaler)
     
         joblib.dump({
             "pipeline": self.pipeline,
@@ -63,8 +62,21 @@ class Detector:
         print(f"Model trained and saved to {self.model_path}")
 
     
+    def score(self, session):
 
-    # def _vectorize(self, sessions):
-    #     features = self.extractor.extract_batch(sessions)
+        if self.pipeline is None and not self.load_model():
+            raise RuntimeError("train the model first!")
         
+        features = self.extractor.extract(session)
+        df = pd.DataFrame([features])
+        X = df[self.feature_names]
+
+        raw = -self.pipeline.decision_function(X)[0]
+        normalized = self.score_scaler.transform([[raw]])[0][0]
+
+        return float(normalized)
+    
+    def score_batch(self, sessions):
+        return [self.score(session) for session in sessions]
+    
 

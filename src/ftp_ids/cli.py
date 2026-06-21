@@ -97,6 +97,8 @@ def run_train(log_path):
     sessions = build_sessions(events)
     dt = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
     dt.train(sessions)
+    scores = dt.score_batch(sessions)
+    print("scores: ", scores)
 
 
 if __name__ == "__main__":
