@@ -6,6 +6,7 @@ from ftp_ids.core.session_builder import build_sessions
 from ftp_ids.core.feature_extractor import FeatureExtractor
 from ftp_ids.core.detector import Detector
 from ftp_ids.config import MODEL_PATH, CONTAMINATION
+import pandas as pd
 
 def main():
     parser = argparse.ArgumentParser(
@@ -95,8 +96,17 @@ def run_extract(log_path, show: bool = False):
 def run_train(log_path):
     events = run_parse(log_path, output=False)
     sessions = build_sessions(events)
+    
+    fe = FeatureExtractor()
+    features = fe.extract_batch(sessions)
+
+    df = pd.DataFrame(features)
+    print(df)
+    
     dt = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
+    dt.load_model()
     dt.train(sessions)
+    
     scores = dt.score_batch(sessions)
     print("scores: ", scores)
 
