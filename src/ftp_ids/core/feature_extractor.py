@@ -89,41 +89,30 @@ class FeatureExtractor:
         session_duration = (session['end_time'] - session['start_time']).total_seconds()
 
         # ratios
-        fail_ratio   = failed_logins / total_events if total_events else 0
+        fail_ratio   = failed_logins / total_events if total_events else 0 # TODO consider to remove the check on total_events because a session must have at least one event ?
         night_ratio  = night_events / total_events if total_events else 0
         transfer_ratio = (uploads + downloads) / total_events if total_events else 0
         bytes_per_file = total_bytes / unique_files if unique_files else 0
 
-        # intermediates just for debugging
-        print("-- intermediates --")
-        print('commands', commands, sep="=")
-        print('clt_commands', clt_commands, sep="=")
-        print('empty_commands', empty_commands, sep="=")
-        print('garbage_commands', garbage_commands, sep="=")
-        print('speeds', speeds, sep="=")
-
-        # features
-        print("-- features --")
-        print('total_events', total_events, sep="=")
-        print('failed_logins', failed_logins, sep="=")
-        print('downloads', downloads, sep="=")
-        print('uploads', uploads, sep="=")
-        print('unique_commands', unique_commands, sep="=")
-        print('unique_files', unique_files, sep="=")
-        print('night_events', night_events, sep="=")
-        print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
-        print('garbag   e_cmd_ratio', garbage_cmd_ratio, sep="=")
-        print('is_auth', session['is_auth'], sep="=")
-        print('total_bytes', total_bytes, sep="=")
-        print('avg_speed', avg_speed, sep="=")
-        print('session_duration', session_duration, sep="=")
-        print('fail_ratio', fail_ratio, sep="=")
-        print('night_ratio', night_ratio, sep="=")
-        print('transfer_ratio', transfer_ratio, sep="=")
-        print('bytes_per_file', bytes_per_file, sep="=")
-
-        ...
-
+        return {
+            "total_events":      total_events,
+            "failed_logins":     failed_logins,
+            "downloads":         downloads,
+            "uploads":           uploads,
+            "unique_commands":   unique_commands,
+            "unique_files":      unique_files,
+            "night_events":      night_events,
+            "total_bytes":       total_bytes,
+            "avg_speed":         avg_speed,
+            "session_duration":  session_duration,
+            "fail_ratio":        fail_ratio,
+            "night_ratio":       night_ratio,
+            "transfer_ratio":   transfer_ratio,
+            "bytes_per_file":    bytes_per_file,
+            "garbage_cmd_ratio": garbage_cmd_ratio,
+            "abrupt_disconnect": 1 if session['end_type'] == 'abrupt' else 0,
+            "is_auth":           1 if session['is_auth'] else 0,
+        }
 
     def _count_events(self, events: list[dict], event_type: str) -> int:
         count = 0
