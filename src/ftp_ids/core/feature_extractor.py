@@ -92,7 +92,7 @@ class FeatureExtractor:
         fail_ratio   = failed_logins / total_events if total_events else 0
         night_ratio  = night_events / total_events if total_events else 0
         transfer_ratio = (uploads + downloads) / total_events if total_events else 0
-        bytes_per_file = total_bytes / unique_files if unique_files else total_bytes
+        bytes_per_file = total_bytes / unique_files if unique_files else 0
 
         # intermediates just for debugging
         print("-- intermediates --")
@@ -112,7 +112,7 @@ class FeatureExtractor:
         print('unique_files', unique_files, sep="=")
         print('night_events', night_events, sep="=")
         print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
-        print('garbage_cmd_ratio', garbage_cmd_ratio, sep="=")
+        print('garbag   e_cmd_ratio', garbage_cmd_ratio, sep="=")
         print('is_auth', session['is_auth'], sep="=")
         print('total_bytes', total_bytes, sep="=")
         print('avg_speed', avg_speed, sep="=")
