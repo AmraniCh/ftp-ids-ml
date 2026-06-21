@@ -89,7 +89,7 @@ class FeatureExtractor:
         session_duration = (session['end_time'] - session['start_time']).total_seconds()
 
         # ratios
-        fail_ratio   = failed_logins / total_events if total_bytes else 0
+        fail_ratio   = failed_logins / total_events if total_events else 0
         night_ratio  = night_events / total_events if total_events else 0
         transfer_ratio = (uploads + downloads) / total_events if total_events else 0
         bytes_per_file = total_bytes / unique_files if unique_files else total_bytes
