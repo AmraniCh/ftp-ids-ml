@@ -6,7 +6,6 @@ import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.pipeline import Pipeline
-from ftp_ids.core.storage import Storage
 
 class Detector:
 
@@ -97,7 +96,9 @@ class Detector:
 
         joblib.dump({
             "pipeline": self.pipeline,
+            "scaler": self.scaler,
             "score_scaler": self.score_scaler,
             "features": self.feature_names,
         }, self.model_path)
+        
         print(f"Model retrained and saved to {self.model_path}")

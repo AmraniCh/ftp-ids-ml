@@ -129,7 +129,10 @@ def run_train(log_path):
     dt.train(sessions)
     
     scores = dt.score_batch(sessions)
-    print("scores: ", scores)
+    print("Scores: ")
+    for i, score in enumerate(scores):
+        print(f"{i}: {score}")
+
 
 def run_watch(log_path: str, threshold: float):
     def tail(path):
@@ -190,13 +193,12 @@ def run_correct():
 
     if "label" not in df.columns:
         print(f"No 'label' column in {config.ALERTS_PATH}")
-        print("Open the file, add a 'label' column with 'normal' or 'attack' per row, save, re-run.")
         return
 
     valid = {"normal", "attack"}
     invalid = df[~df["label"].isin(valid)]
     if not invalid.empty:
-        print(f"Invalid labels (must be 'normal' or 'attack'):")
+        print(f"Invalid labels, must be 'normal' or 'attack'")
         print(invalid[["src_ip", "start_time", "label"]])
         return
 
@@ -234,7 +236,7 @@ def run_retrain(log_path: str):
             f"+ {len(clean_pool)} confirmed-normal from clean pool")
     else:
         combined = original_features[FEATURE_NAMES]
-        print(f"No clean pool yet — training on {len(combined)} sessions")
+        print(f"No clean pool yet, training on {len(combined)} sessions")
 
     detector.train_on_features(combined)
 
