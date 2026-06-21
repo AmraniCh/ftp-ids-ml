@@ -14,3 +14,5 @@ def _autodetect_log_path() -> str | None:
 LOGS_PATH = _autodetect_log_path()
 MODEL_PATH = "data/models/iso_forest.pkl"
 CONTAMINATION = 0.05 
+
+ALERTS_PATH     = "data/reports/alerts.csv"

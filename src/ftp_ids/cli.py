@@ -8,6 +8,7 @@ from ftp_ids.core.detector import Detector
 from ftp_ids.config import MODEL_PATH, CONTAMINATION
 import pandas as pd
 import time
+from ftp_ids.core.storage import Storage
 
 def main():
     parser = argparse.ArgumentParser(
@@ -55,7 +56,7 @@ def main():
     if args.command == "watch":
         run_watch(args.log, args.threshold)
 
-        
+
 
 def run_parse(log_path: str, output=True) :
     p = VsftpdParser()
@@ -131,6 +132,7 @@ def run_watch(log_path: str, threshold: float):
                 yield line
 
     parser = VsftpdParser()
+    storage = Storage()
     detector = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
     if not detector.load_model():
         print("No model. Train first: ftp-ids train")
@@ -159,10 +161,12 @@ def run_watch(log_path: str, threshold: float):
             score = detector.score(s)
             seen_session_keys.add(key)
 
-            flag = "ALERT" if score >= threshold else "  ok"
-            print(f"{flag}  {score:.2f}  {s['src_ip']:<16} "
-                  f"user={s['user'] or '-':<20} "
-                  f"events={s['n_events']}")
+            if score >= threshold:
+                features = detector.extractor.extract(s)
+                storage.append_alert(s, score, features)
+                print(f"ALERT  {score:.2f}  {s['src_ip']:<16} user={s['user'] or '-'}")
+            else:
+                print(f"ok    {score:.2f}  {s['src_ip']:<16} user={s['user'] or '-'}")
     
 
 if __name__ == "__main__":
