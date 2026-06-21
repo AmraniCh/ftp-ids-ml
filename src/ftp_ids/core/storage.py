@@ -2,10 +2,10 @@ from ftp_ids import config
 from ftp_ids.core.feature_extractor import FEATURE_NAMES
 from pathlib import Path
 import csv
+import pandas as pd
+from datetime import datetime
 
 class Storage:
-
-
 
     def append_alert(self, session, score, features):
         row = {
@@ -26,6 +26,28 @@ class Storage:
 
         self._append_row(config.ALERTS_PATH, row, fieldnames)
 
+    def load_alerts(self):
+        if not Path(config.ALERTS_PATH).exists():
+            return pd.DataFrame()
+        return pd.read_csv(config.ALERTS_PATH)
+
+    def add_to_clean_pool(self, rows):
+        needed = ["src_ip", "start_time", *FEATURE_NAMES]
+        rows = rows[needed].copy()
+        rows["corrected_at"] = datetime.now().isoformat()
+
+        if Path(config.CLEAN_POOL_PATH).exists():
+            pool = pd.read_csv(config.CLEAN_POOL_PATH)
+            new_keys = set(zip(rows["src_ip"], rows["start_time"]))
+            pool = pool[~pool.apply(
+                lambda r: (r["src_ip"], r["start_time"]) in new_keys, axis=1
+            )]
+            pool = pd.concat([pool, rows], ignore_index=True)
+        else:
+            pool = rows
+
+        pool.to_csv(config.CLEAN_POOL_PATH, index=False)
+        return len(pool)
 
     def _append_row(self, path, row, fieldnames):
         file_exists = Path(path).exists()

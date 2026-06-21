@@ -16,3 +16,4 @@ MODEL_PATH = "data/models/iso_forest.pkl"
 CONTAMINATION = 0.05 
 
 ALERTS_PATH     = "data/reports/alerts.csv"
+CLEAN_POOL_PATH = "data/reports/clean_pool.csv"

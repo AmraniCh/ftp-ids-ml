@@ -33,28 +33,33 @@ def main():
 
     watch_p = subparsers.add_parser("watch", description="Watch the specified log and score session in live")
     watch_p.add_argument("--log", default=config.LOGS_PATH)
-    watch_p.add_argument("--threshold", type=float, default=0.7) # threshold
+    watch_p.add_argument("--threshold", type=float, default=0.7) 
     
+    correct_p = subparsers.add_parser("correct", help="Apply admin labels from alerts.csv to the clean pool")
 
     args = parser.parse_args()
 
-    if args.log is None:
-        parser.error("No FTP log file found. Specify one with --log.")
+    
+    if args.command == "correct":
+        run_correct()
+    else:    
+        if args and args.log is None:
+            parser.error("No FTP log file found. Specify one with --log.")
 
-    if args.command == "parse":
-        run_parse(args.log)
+        if args.command == "parse":
+            run_parse(args.log)
 
-    if args.command == "sessions":
-        run_sessions(args.log, args.show)
+        if args.command == "sessions":
+            run_sessions(args.log, args.show)
 
-    if args.command == "extract":
-        run_extract(args.log)
+        if args.command == "extract":
+            run_extract(args.log)
 
-    if args.command == "train":
-        run_train(args.log)
+        if args.command == "train":
+            run_train(args.log)
 
-    if args.command == "watch":
-        run_watch(args.log, args.threshold)
+        if args.command == "watch":
+            run_watch(args.log, args.threshold)
 
 
 
@@ -169,5 +174,40 @@ def run_watch(log_path: str, threshold: float):
                 print(f"ok    {score:.2f}  {s['src_ip']:<16} user={s['user'] or '-'}")
     
 
+def run_correct():
+    storage = Storage()
+    df = storage.load_alerts()
+
+    if df.empty:
+        print("No alerts.csv yet")
+        return
+
+    if "label" not in df.columns:
+        print(f"No 'label' column in {config.ALERTS_PATH}")
+        print("Open the file, add a 'label' column with 'normal' or 'attack' per row, save, re-run.")
+        return
+
+    valid = {"normal", "attack"}
+    invalid = df[~df["label"].isin(valid)]
+    if not invalid.empty:
+        print(f"Invalid labels (must be 'normal' or 'attack'):")
+        print(invalid[["src_ip", "start_time", "label"]])
+        return
+
+    false_positives = df[df["label"] == "normal"]
+    confirmed       = df[df["label"] == "attack"]
+
+    print(f"False positives (-> clean pool): {len(false_positives)}")
+    print(f"Confirmed attacks:               {len(confirmed)}")
+
+    if len(false_positives) == 0:
+        print("Nothing to add to clean pool.")
+        return
+
+    new_size = storage.add_to_clean_pool(false_positives)
+    print(f"Clean pool now has {new_size} session(s).")
+    print(f"Run: ftp-ids retrain")
+
+    
 if __name__ == "__main__":
     main()
