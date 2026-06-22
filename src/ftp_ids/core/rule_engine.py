@@ -6,23 +6,34 @@ class RuleEngine:
         self.session = session
 
     def check(self):
-        return [{
-            'rule_id': 'VSFTPD_234_BACKDOOR',
-            'name': "vsftpd 2.3.4 Backdoor (CVE-2011-2523)",
-            'matched': self._backdoor()
-        }, {
-            'rule_id': 'FTP_BOUNCE_MGLNDD',
-            'name': "FTP bounce probe (MGLNDD scanner)",
-            'matched': self._ftp_bounce(),
-        }, {
-            'rule_id': 'PORT_SCAN',
-            'name': "Port scan",
-            'matched': self._port_scan(),
-        }, {
-            'rule_id': 'BRUTE_FORCE',
-            'name': "Brute force login attempts",
-            'matched': self._brute_force()
-        }]
+        return [
+            {
+                'rule_id': 'VSFTPD_234_BACKDOOR',
+                'name': "vsftpd 2.3.4 Backdoor (CVE-2011-2523)",
+                'matched': self._backdoor()
+            }, 
+            {
+                'rule_id': 'FTP_BOUNCE_MGLNDD',
+                'name': "FTP bounce probe (MGLNDD scanner)",
+                'matched': self._ftp_bounce(),
+            }, 
+            {
+                'rule_id': 'PORT_SCAN',
+                'name': "Port scan",
+                'matched': self._port_scan(),
+            }, 
+            {
+                'rule_id': 'BRUTE_FORCE',
+                'name': "Brute force login attempts",
+                'matched': self._brute_force()
+            },
+            {
+                'rule_id': 'ANONYMOUS_ABUSE',     
+                'name': "Anonymous user write attempt",           
+                'matched': self._anonymous_abuse()
+            },
+
+        ]
 
     def _backdoor(self):
         for event in self.session['events']:
@@ -51,3 +62,8 @@ class RuleEngine:
         failed = sum(1 for e in self.session['events'] if e['event_type'] == 'FAIL_LOGIN')
         return failed >= threshold
 
+    def _anonymous_abuse(self):
+        write_commands = {"STOR", "STOU", "APPE", "DELE",  "MKD", "RMD", "RNFR", "RNTO", "SITE", "ALLO"}
+        if self.session['user'] != "anonymous":
+            return False
+        return any(e['command'] in write_commands for e in self.session['events'] if e['command'])
