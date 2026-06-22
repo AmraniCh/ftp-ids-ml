@@ -7,7 +7,7 @@ from datetime import datetime
 
 class Storage:
 
-    def append_alert(self, session, score, features):
+    def append_alert(self, session, score, features, rule_alerts=[]):
         row = {
             "src_ip":     session["src_ip"],
             "user":       session["user"] or "",
@@ -16,12 +16,13 @@ class Storage:
             "n_events":   session["n_events"],
             "end_type":   session["end_type"],
             "score":      round(score, 4),
+            "rules":      ",".join(r['rule_id'] for r in rule_alerts),
             **features,
         }
 
         fieldnames = [
-            "src_ip", "user", "start_time", "end_time", "n_events", "end_type", "score",
-            *FEATURE_NAMES,
+            "src_ip", "user", "start_time", "end_time", "n_events", "end_type", "score", "rules",
+            *FEATURE_NAMES
         ]
 
         self._append_row(config.ALERTS_PATH, row, fieldnames)

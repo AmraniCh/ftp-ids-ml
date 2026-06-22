@@ -9,6 +9,7 @@ from ftp_ids.config import MODEL_PATH, CONTAMINATION
 import pandas as pd
 import time
 from ftp_ids.core.storage import Storage
+from ftp_ids.core.rule_engine import RuleEngine
 
 def main():
     parser = argparse.ArgumentParser(
@@ -36,7 +37,7 @@ def main():
     watch_p.add_argument("--threshold", type=float, default=0.7) 
     
     correct_p = subparsers.add_parser("correct", help="Apply admin labels from alerts.csv to the clean pool")
-
+    
     retrain_p = subparsers.add_parser("retrain", help="Rebuild model with original log + clean pool")
     retrain_p.add_argument("--log", default=config.LOGS_PATH)
 
@@ -130,8 +131,8 @@ def run_train(log_path):
     
     storage = Storage()
     storage.clear_alerts()
-    storage.clear_clean_pool()
-    # TODO threshild is hardcoded here
+    # storage.clear_clean_pool()
+    # TODO threshold is hardcoded here
     for i,s in enumerate(sessions):
         score = dt.score(s)
         if score >= 0.7:
@@ -176,19 +177,31 @@ def run_watch(log_path: str, threshold: float):
 
         sessions = build_sessions(buffer)
 
-        for s in sessions:
-            key = (s["src_ip"], s["start_time"])
+        for session in sessions:
+            key = (session["src_ip"], session["start_time"])
             if key in seen_session_keys:
                 continue
-            score = detector.score(s)
+
+            rule_engine = RuleEngine(session)
+            all_rules = rule_engine.check()
+            rules_matched = [r for r in all_rules if r['matched']]
+                
+            score = detector.score(session)
             seen_session_keys.add(key)
 
-            if score >= threshold:
-                features = detector.extractor.extract(s)
-                storage.append_alert(s, score, features)
-                print(f"ALERT  {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
+            flags = []
+            if score >= 0.5 or rules_matched:
+                features = detector.extractor.extract(session)
+                storage.append_alert(session, score, features, rules_matched)
+                    
+                if score >= threshold:
+                    flags.append(f"ML ({score:.2f})")
+                
+                flags.extend(f"RE ({r['rule_id']})" for r in rules_matched)
+                
+                print(f"ALERT  {session['src_ip']:<16} user={session['user'] or '-':<20} {', '.join(flags)}")
             else:
-                print(f"ok    {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
+                print(f"ok     {session['src_ip']:<16} user={session['user'] or '-':<20} {score:.2f}")
     
 
 def run_correct():
