@@ -18,7 +18,11 @@ class RuleEngine:
             'rule_id': 'PORT_SCAN',
             'name': "Port scan",
             'matched': self._port_scan(),
-        },]
+        }, {
+            'rule_id': 'BRUTE_FORCE',
+            'name': "Brute force login attempts",
+            'matched': self._brute_force()
+        }]
 
     def _backdoor(self):
         for event in self.session['events']:
@@ -42,4 +46,8 @@ class RuleEngine:
                 return True
 
         return False
+
+    def _brute_force(self, threshold=5):
+        failed = sum(1 for e in self.session['events'] if e['event_type'] == 'FAIL_LOGIN')
+        return failed >= threshold
 
