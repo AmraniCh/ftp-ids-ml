@@ -14,7 +14,11 @@ class RuleEngine:
             'rule_id': 'FTP_BOUNCE_MGLNDD',
             'name': "FTP bounce probe (MGLNDD scanner)",
             'matched': self._ftp_bounce(),
-        }]
+        }, {
+            'rule_id': 'PORT_SCAN',
+            'name': "Port scan",
+            'matched': self._port_scan(),
+        },]
 
     def _backdoor(self):
         for event in self.session['events']:
@@ -24,6 +28,13 @@ class RuleEngine:
                 return True
                 
         return False
+    
+
+    def _port_scan(self):
+        has_command = any(
+            e['event_type'] == 'FTP command' for e in self.session['events'] 
+        )
+        return not has_command and len(self.session['events']) >= 2
     
     def _ftp_bounce(self):
         for event in self.session['events']:
