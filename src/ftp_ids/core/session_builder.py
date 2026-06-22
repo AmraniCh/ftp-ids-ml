@@ -1,13 +1,11 @@
-from pprint import pprint
-
 from collections import defaultdict
 from datetime import timedelta
 
 SESSION_GAP_MINUTES = 5
 
-def build_sessions(events: list[dict]) -> list[dict]:
+def build_sessions(events):
     # group events by source ip
-    by_ip: dict[str, list[dict]] = defaultdict(list)
+    by_ip = defaultdict(list)
     for event in events:
         by_ip[event["src_ip"]].append(event)
 
@@ -18,7 +16,7 @@ def build_sessions(events: list[dict]) -> list[dict]:
     for src_ip, ip_events in by_ip.items():
         ip_events.sort(key=lambda e: e["timestamp"])
 
-        current: list[dict] = []
+        current = []
         for event in ip_events:
             if current:
                 time_gap = event["timestamp"] - current[-1]["timestamp"]
@@ -40,8 +38,7 @@ def build_sessions(events: list[dict]) -> list[dict]:
     return sessions
 
 
-def _make_session(src_ip: str, events: list[dict]) -> dict:
-    """Build one session dict from its ordered events."""
+def _make_session(src_ip, events):
     first, last = events[0], events[-1]
 
     # add user for first events followed by an authentified user or Anonymous
