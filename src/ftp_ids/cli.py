@@ -10,6 +10,7 @@ import pandas as pd
 import time
 from ftp_ids.core.storage import Storage
 from ftp_ids.core.rule_engine import RuleEngine
+from ftp_ids.dashboard.app import serve
 
 def main():
     parser = argparse.ArgumentParser(
@@ -41,11 +42,17 @@ def main():
     retrain_p = subparsers.add_parser("retrain", help="Rebuild model with original log + clean pool")
     retrain_p.add_argument("--log", default=config.LOGS_PATH)
 
+    dashboard_p = subparsers.add_parser("dashboard", help="Launch the web dashboard")
+    dashboard_p.add_argument("--port", type=int, default=8080)
+    dashboard_p.add_argument("--host", default="127.0.0.1")
+
     args = parser.parse_args()
 
     
     if args.command == "correct":
         run_correct()
+    elif args.command == "dashboard":
+        serve(host=args.host, port=args.port)
     else:    
         if args and args.log is None:
             parser.error("No FTP log file found. Specify one with --log.")
