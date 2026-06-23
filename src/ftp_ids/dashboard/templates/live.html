@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Live · FTPGuard{% endblock %}
+
+{% block content %}
+
+<div class="flex items-baseline justify-between mb-6">
+    <div>
+        <h2 class="text-xs uppercase tracking-wider text-gray-500">live feed</h2>
+        <p class="text-xs text-gray-500 mt-1">polling every 2 seconds · new alerts highlighted</p>
+    </div>
+    <button id="enable-notifs"
+        class="px-3 py-1.5 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 transition-colors">
+        enable notifications
+    </button>
+</div>
+
+<div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="border border-gray-800 bg-gray-900 p-5">
+        <div class="text-xs uppercase tracking-wider text-gray-500">new since opened</div>
+        <div id="new-count" class="text-3xl text-amber-500 tabular-nums mt-2">0</div>
+    </div>
+    <div class="border border-gray-800 bg-gray-900 p-5">
+        <div class="text-xs uppercase tracking-wider text-gray-500">in feed</div>
+        <div id="total-count" class="text-3xl text-white tabular-nums mt-2">—</div>
+    </div>
+    <div class="border border-gray-800 bg-gray-900 p-5">
+        <div class="text-xs uppercase tracking-wider text-gray-500">last poll</div>
+        <div id="last-poll" class="text-sm text-gray-300 mt-3">—</div>
+    </div>
+</div>
+
+<div id="feed" class="border border-gray-800 bg-gray-900 divide-y divide-gray-800">
+    <div class="p-6 text-center text-gray-500 text-sm">waiting for alerts…</div>
+</div>
+
+<div id="toast"
+    class="fixed top-4 right-4 z-50 bg-gray-900 border border-amber-500 px-4 py-3 max-w-sm
+           opacity-0 translate-x-8 transition-all duration-200">
+    <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">new alert</div>
+    <div id="toast-body" class="text-sm text-white"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const seen = new Set();
+    let newCount = 0;
+    let notifsEnabled = false;
+
+    const toastEl = document.getElementById("toast");
+    const toastBody = document.getElementById("toast-body");
+
+    // notifications
+    document.getElementById("enable-notifs").addEventListener("click", async () => {
+        if (!("Notification" in window)) {
+            alert("Browser does not support desktop notifications.");
+            return;
+        }
+        const perm = await Notification.requestPermission();
+        if (perm === "granted") {
+            notifsEnabled = true;
+            const btn = document.getElementById("enable-notifs");
+            btn.textContent = "✓ notifications on";
+            btn.classList.add("text-green-500", "border-green-500");
+        }
+    });
+
+    function showToast(text) {
+        toastBody.textContent = text;
+        toastEl.classList.remove("opacity-0", "translate-x-8");
+        setTimeout(() => {
+            toastEl.classList.add("opacity-0", "translate-x-8");
+        }, 4000);
+    }
+
+    function notify(alert) {
+        const text = `${alert.src_ip} · ${alert.user || "—"} · score ${Number(alert.score).toFixed(2)}`;
+        showToast(text);
+        if (notifsEnabled) {
+            new Notification("FTPGuard alert", { body: text });
+        }
+    }
+
+    function row(a) {
+        const score = Number(a.score);
+        const scoreClass = score >= 0.7 ? "text-red-500" : score >= 0.4 ? "text-amber-500" : "text-gray-200";
+        const rules = a.rules
+            ? `<span class="text-amber-500 text-xs">${a.rules}</span>`
+            : `<span class="text-gray-700 text-xs">—</span>`;
+        return `
+            <div class="px-4 py-3 grid grid-cols-12 gap-3 items-center text-sm hover:bg-gray-950">
+                <div class="col-span-3 text-gray-500 text-xs tabular-nums">${a.start_time}</div>
+                <div class="col-span-2">${a.src_ip}</div>
+                <div class="col-span-2">${a.user || "—"}</div>
+                <div class="col-span-1 text-right tabular-nums">${a.n_events}</div>
+                <div class="col-span-1 text-right tabular-nums font-semibold ${scoreClass}">${score.toFixed(2)}</div>
+                <div class="col-span-3">${rules}</div>
+            </div>`;
+    }
+
+    async function poll() {
+        try {
+            const since = new Date().toISOString().slice(0, 19).replace("T", " ");
+            const res = await fetch(`/api/alerts/recent?since=${encodeURIComponent(since)}`);
+            const data = await res.json();
+
+            document.getElementById("total-count").textContent = data.length;
+            document.getElementById("last-poll").textContent = new Date().toLocaleTimeString();
+
+            const feed = document.getElementById("feed");
+            if (data.length === 0) {
+                feed.innerHTML = `<div class="p-6 text-center text-gray-500 text-sm">waiting for alerts…</div>`;
+                return;
+            }
+
+            const isFirstPoll = seen.size === 0;
+            for (const a of data) {
+                const key = `${a.src_ip}|${a.start_time}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    if (!isFirstPoll) {
+                        newCount += 1;
+                        notify(a);
+                    }
+                }
+            }
+            document.getElementById("new-count").textContent = newCount;
+
+            feed.innerHTML = data.map(row).join("");
+        } catch (e) {
+            document.getElementById("last-poll").textContent = "error · " + e.message;
+        }
+    }
+
+    poll();
+    setInterval(poll, 2000);
+</script>
+{% endblock %}

@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for
 from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour
 from ftp_ids.dashboard.alerts_service import list_alerts, get_alert, mark_alert_normal
 from datetime import datetime
+from ftp_ids.core.storage import Storage
+from flask import jsonify
 
 app = Flask(__name__)
 
@@ -40,6 +42,27 @@ def mark_normal():
     start_time = request.form["start_time"]
     mark_alert_normal(src_ip, start_time)
     return redirect(url_for("alerts"))
+
+@app.route("/live")
+def live():
+    return render_template("live.html")
+
+@app.route("/api/alerts/recent")
+def recent_alerts():
+    since = request.args.get("since")
+    
+    storage = Storage()
+    df = storage.load_alerts()
+    if df.empty:
+        return jsonify([])
+    
+    if since:
+        # replace T with space on both sides and compare as strings
+        normalized = df["start_time"].astype(str).str.replace("T", " ")
+        df = df[normalized >= since.replace("T", " ")]
+    
+    df = df.sort_values("start_time", ascending=False).head(100)
+    return jsonify(df.fillna("").to_dict(orient="records"))
 
 def serve(host: str = "127.0.0.1", port: int = 8080):
     print(f"Dashboard running at http://{host}:{port}")
