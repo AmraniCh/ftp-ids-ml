@@ -1,8 +1,17 @@
 from flask import Flask, render_template, request
 from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour
 from ftp_ids.dashboard.alerts_service import list_alerts, get_alert
+from datetime import datetime
 
 app = Flask(__name__)
+
+@app.template_filter("ts")
+def ts(value):
+    try:
+        dt = datetime.fromisoformat(str(value))
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except (ValueError, TypeError):
+        return str(value)
 
 @app.route("/")
 def index():

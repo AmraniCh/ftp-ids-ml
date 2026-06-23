@@ -32,11 +32,11 @@
     <dl class="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8 text-sm">
         <div class="flex justify-between border-b border-gray-800/50 pb-1">
             <dt class="text-gray-500">start</dt>
-            <dd class="tabular-nums">{{ alert.start_time }}</dd>
+            <dd class="tabular-nums">{{ alert.start_time | ts }}</dd>
         </div>
         <div class="flex justify-between border-b border-gray-800/50 pb-1">
             <dt class="text-gray-500">end</dt>
-            <dd class="tabular-nums">{{ alert.end_time }}</dd>
+            <dd class="tabular-nums">{{ alert.end_time | ts }}</dd>
         </div>
         <div class="flex justify-between border-b border-gray-800/50 pb-1">
             <dt class="text-gray-500">events</dt>

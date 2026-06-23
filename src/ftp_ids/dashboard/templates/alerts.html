@@ -26,7 +26,7 @@
         <tbody class="divide-y divide-gray-800">
         {% for a in items %}
             <tr class="hover:bg-gray-950 {% if a.labeled %}opacity-50{% endif %}">
-                <td class="px-4 py-2 text-gray-500 tabular-nums whitespace-nowrap">{{ a.start_time }}</td>
+                <td class="px-4 py-2 text-gray-500 tabular-nums whitespace-nowrap">{{ a.start_time | ts }}</td>
                 <td class="px-4 py-2">{{ a.src_ip }}</td>
                 <td class="px-4 py-2">{{ a.user or '—' }}</td>
                 <td class="px-4 py-2 text-right tabular-nums">{{ a.n_events }}</td>
