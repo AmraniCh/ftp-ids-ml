@@ -20,6 +20,7 @@
                 <th class="text-right px-4 py-3 font-normal">events</th>
                 <th class="text-right px-4 py-3 font-normal">score</th>
                 <th class="text-left px-4 py-3 font-normal">rules</th>
+                <th class="text-left px-4 py-3 font-normal">status</th>
                 <th></th>
             </tr>
         </thead>
@@ -37,6 +38,13 @@
                     {{ "%.2f"|format(a.score) }}
                 </td>
                 <td class="px-4 py-2 text-amber-500 text-xs">{{ a.rules or '' }}</td>
+                <td class="px-4 py-2">
+                    {% if a.labeled %}
+                        <span class="px-2 py-0.5 text-xs bg-green-500 text-gray-950 font-semibold">normal</span>
+                    {% else %}
+                        <span class="px-2 py-0.5 text-xs bg-red-500 text-gray-950 font-semibold">attack</span>
+                    {% endif %}
+                </td>
                 <td class="px-4 py-2 text-right">
                     <a href="{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}"
                     class="px-3 py-1 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400 transition-colors">
