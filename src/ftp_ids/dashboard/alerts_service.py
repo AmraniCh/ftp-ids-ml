@@ -34,7 +34,19 @@ def list_alerts(page=1, per_page=12):
 def get_alert(src_ip, start_time):
     storage = Storage()
     alerts = storage.load_alerts()
+    pool = storage.load_clean_pool()
+
     for _, row in alerts.iterrows():
         if row["src_ip"] == src_ip and str(row["start_time"]) == start_time:
-            return row.to_dict()
+            alert = row.to_dict()
+
+            # check labeled state
+            alert["labeled"] = False
+            if not pool.empty:
+                for _, p_row in pool.iterrows():
+                    if p_row["src_ip"] == src_ip and str(p_row["start_time"]) == start_time:
+                        alert["labeled"] = True
+                        break
+
+            return alert
     return None

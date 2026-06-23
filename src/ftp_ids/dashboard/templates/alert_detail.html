@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Alert · FTPGuard{% endblock %}
+
+{% block content %}
+
+<div class="mb-6">
+    <a href="{{ url_for('alerts') }}" class="text-xs text-gray-500 hover:text-gray-300">← back to alerts</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="border border-gray-800 bg-gray-900 p-5">
+        <div class="text-xs uppercase tracking-wider text-gray-500">source ip</div>
+        <div class="text-xl text-white mt-2">{{ alert.src_ip }}</div>
+    </div>
+    <div class="border border-gray-800 bg-gray-900 p-5">
+        <div class="text-xs uppercase tracking-wider text-gray-500">user</div>
+        <div class="text-xl text-white mt-2">{{ alert.user or '—' }}</div>
+    </div>
+    <div class="border border-gray-800 bg-gray-900 p-5">
+        <div class="text-xs uppercase tracking-wider text-gray-500">score</div>
+        <div class="text-xl mt-2 tabular-nums font-semibold
+            {% if alert.score >= 0.7 %}text-red-500
+            {% elif alert.score >= 0.4 %}text-amber-500
+            {% else %}text-white{% endif %}">
+            {{ "%.2f"|format(alert.score) }}
+        </div>
+    </div>
+</div>
+
+<section class="border border-gray-800 bg-gray-900 p-6 mb-6">
+    <h3 class="text-xs uppercase tracking-wider text-gray-500 mb-4">metadata</h3>
+    <dl class="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8 text-sm">
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <dt class="text-gray-500">start</dt>
+            <dd class="tabular-nums">{{ alert.start_time }}</dd>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <dt class="text-gray-500">end</dt>
+            <dd class="tabular-nums">{{ alert.end_time }}</dd>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <dt class="text-gray-500">events</dt>
+            <dd class="tabular-nums">{{ alert.n_events }}</dd>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <dt class="text-gray-500">end type</dt>
+            <dd>{{ alert.end_type }}</dd>
+        </div>
+        <div class="flex justify-between md:col-span-2 border-b border-gray-800/50 pb-1">
+            <dt class="text-gray-500">rules fired</dt>
+            <dd class="text-amber-500">{{ alert.rules or '—' }}</dd>
+        </div>
+    </dl>
+</section>
+
+<section class="border border-gray-800 bg-gray-900 p-6 mb-6">
+    <h3 class="text-xs uppercase tracking-wider text-gray-500 mb-4">features</h3>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">total events</span>
+            <span class="tabular-nums">{{ alert.total_events }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">failed logins</span>
+            <span class="tabular-nums">{{ alert.failed_logins }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">downloads</span>
+            <span class="tabular-nums">{{ alert.downloads }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">uploads</span>
+            <span class="tabular-nums">{{ alert.uploads }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">unique cmds</span>
+            <span class="tabular-nums">{{ alert.unique_commands }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">unique files</span>
+            <span class="tabular-nums">{{ alert.unique_files }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">night events</span>
+            <span class="tabular-nums">{{ alert.night_events }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">total bytes</span>
+            <span class="tabular-nums">{{ alert.total_bytes }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">avg speed</span>
+            <span class="tabular-nums">{{ "%.1f"|format(alert.avg_speed) }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">duration (s)</span>
+            <span class="tabular-nums">{{ alert.session_duration }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">fail ratio</span>
+            <span class="tabular-nums">{{ "%.2f"|format(alert.fail_ratio) }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">night ratio</span>
+            <span class="tabular-nums">{{ "%.2f"|format(alert.night_ratio) }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">transfer ratio</span>
+            <span class="tabular-nums">{{ "%.2f"|format(alert.transfer_ratio) }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">bytes per file</span>
+            <span class="tabular-nums">{{ alert.bytes_per_file }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">garbage ratio</span>
+            <span class="tabular-nums">{{ "%.2f"|format(alert.garbage_cmd_ratio) }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">abrupt end</span>
+            <span class="tabular-nums">{{ alert.abrupt_disconnect }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-800/50 pb-1">
+            <span class="text-gray-500">authenticated</span>
+            <span class="tabular-nums">{{ alert.is_auth }}</span>
+        </div>
+    </div>
+</section>
+
+<section class="flex items-center gap-2">
+    {% if alert.labeled %}
+        <span class="text-gray-500 text-sm">✓ already marked as normal</span>
+    {% else %}
+        <form action="" method="post">
+            <input type="hidden" name="src_ip" value="{{ alert.src_ip }}">
+            <input type="hidden" name="start_time" value="{{ alert.start_time }}">
+            <button type="submit"
+                class="px-4 py-2 text-sm border border-gray-800 hover:border-green-500 hover:text-green-500 transition-colors">
+                mark as normal
+            </button>
+        </form>
+        <form action="" method="post">
+            <input type="hidden" name="src_ip" value="{{ alert.src_ip }}">
+            <input type="hidden" name="start_time" value="{{ alert.start_time }}">
+            <button type="submit"
+                class="px-4 py-2 text-sm border border-gray-800 hover:border-red-500 hover:text-red-500 transition-colors">
+                mark as anomaly
+            </button>
+        </form>
+    {% endif %}
+</section>
+
+{% endblock %}

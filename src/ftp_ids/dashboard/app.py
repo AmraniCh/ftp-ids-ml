@@ -18,6 +18,12 @@ def alerts():
     data = list_alerts(page=page)
     return render_template("alerts.html", **data)
 
+@app.route("/alerts/<src_ip>/<path:start_time>")
+def alert_detail(src_ip, start_time):
+    alert = get_alert(src_ip, start_time)
+    if not alert:
+        return "Alert not found", 404
+    return render_template("alert_detail.html", alert=alert)
 
 def serve(host: str = "127.0.0.1", port: int = 8080):
     print(f"Dashboard running at http://{host}:{port}")
