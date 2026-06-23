@@ -1,114 +1,67 @@
-<!doctype html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="utf-8">
-    <title>{% block title %}FTPGuard{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% block title %}Dashboard · FTPGuard{% endblock %}
 
-<body class="bg-gray-950 text-gray-200 min-h-screen font-mono">
-    <header class="border-b border-gray-800">
-        <div class="max-w-6xl mx-auto px-6 flex items-baseline gap-8">
-            <a href="/" class="py-5 font-bold text-xl">
-                <span class="text-white">FTP</span><span class="text-amber-500">Guard</span>
-            </a>
+{% block content %}
+<h1 class="text-2xl text-white mb-8">Overview</h1>
 
-            <nav class="flex gap-1 text-sm">
-                <a href="/" class="px-4 py-5 border-b-2
-                    {% if request.endpoint == 'index' %}
-                        border-amber-500 text-white
-                    {% else %}
-                        border-transparent text-gray-500 hover:text-gray-300
-                    {% endif %}">
-                    Dashboard
-                </a>
-                <a href="/live" class="px-4 py-5 border-b-2
-                    {% if request.endpoint == 'live' %}
-                        border-amber-500 text-white
-                    {% else %}
-                        border-transparent text-gray-500 hover:text-gray-300
-                    {% endif %}">
-                    Live
-                </a>
-            </nav>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-            <div class="ml-auto py-5 text-xs">
-                {% if stats.is_watching %}
-                <span class="text-green-500">●</span>
-                <span class="text-gray-500">watching</span>
-                {% else %}
-                <span class="text-gray-700">●</span>
-                <span class="text-gray-700">idle</span>
-                {% endif %}
-            </div>
+    <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
+        <div class="text-xs uppercase tracking-wider text-gray-500">events today</div>
+        <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.events_today }}</div>
+    </div>
+
+    <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
+        <div class="text-xs uppercase tracking-wider text-gray-500">alerts today</div>
+        <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.alerts_today }}</div>
+    </div>
+
+    <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
+        <div class="text-xs uppercase tracking-wider text-gray-500">pending review</div>
+        <div class="text-3xl mt-2 tabular-nums {% if stats.pending > 0 %}text-amber-500{% else %}text-white{% endif %}">
+            {{ stats.pending }}
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-6xl mx-auto px-6 py-10">
-        <h1 class="text-2xl text-white mb-8">Overview</h1>
+    <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
+        <div class="text-xs uppercase tracking-wider text-gray-500">unique ips today</div>
+        <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.unique_ips_today }}</div>
+    </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+</div>
 
-            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
-                <div class="text-xs uppercase tracking-wider text-gray-500">events today</div>
-                <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.events_today }}</div>
-            </div>
+<section class="mt-8 border border-gray-800 bg-gray-900 p-6">
+    <h2 class="text-xs uppercase tracking-wider text-gray-500 mb-4">alerts per hour · today</h2>
+    <canvas id="hourlyChart" height="80"></canvas>
+</section>
+{% endblock %}
 
-
-            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
-                <div class="text-xs uppercase tracking-wider text-gray-500">alerts today</div>
-                <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.alerts_today }}</div>
-            </div>
-
-            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
-                <div class="text-xs uppercase tracking-wider text-gray-500">pending review</div>
-                <div
-                    class="text-3xl mt-2 tabular-nums {% if stats.pending > 0 %}text-amber-500{% else %}text-white{% endif %}">
-                    {{ stats.pending }}
-                </div>
-            </div>
-
-            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
-                <div class="text-xs uppercase tracking-wider text-gray-500">unique ips today</div>
-                <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.unique_ips_today }}</div>
-            </div>
-
-        </div>
-
-        <section class="mt-8 border border-gray-800 bg-gray-900 p-6">
-            <h2 class="text-xs uppercase tracking-wider text-gray-500 mb-4">alerts per hour · today</h2>
-            <canvas id="hourlyChart" height="80"></canvas>
-        </section>
-    </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const ctx = document.getElementById('hourlyChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: Array.from({ length: 24 }, (_, h) => h.toString().padStart(2, '0') + ':00'),
-                datasets: [{
-                    data: {{ hourly|tojson }},
-                    borderColor: '#f59e0b',
-                    backgroundColor: '#f59e0b22',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 2,
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' } },
-                    y: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' }, beginAtZero: true }
-                }
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('hourlyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({ length: 24 }, (_, h) => h.toString().padStart(2, '0') + ':00'),
+            datasets: [{
+                data: {{ hourly|tojson }},
+                borderColor: '#f59e0b',
+                backgroundColor: '#f59e0b22',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' } },
+                y: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' }, beginAtZero: true }
             }
-        });
-    </script>
-
-</body>
-
-</html>
+        }
+    });
+</script>
+{% endblock %}
