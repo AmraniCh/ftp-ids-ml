@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour
-from ftp_ids.dashboard.alerts_service import list_alerts, get_alert
+from ftp_ids.dashboard.alerts_service import list_alerts, get_alert, mark_alert_normal
 from datetime import datetime
 
 app = Flask(__name__)
@@ -33,6 +33,13 @@ def alert_detail(src_ip, start_time):
     if not alert:
         return "Alert not found", 404
     return render_template("alert_detail.html", alert=alert)
+
+@app.route("/alerts/mark-normal", methods=["POST"])
+def mark_normal():
+    src_ip = request.form["src_ip"]
+    start_time = request.form["start_time"]
+    mark_alert_normal(src_ip, start_time)
+    return redirect(url_for("alerts"))
 
 def serve(host: str = "127.0.0.1", port: int = 8080):
     print(f"Dashboard running at http://{host}:{port}")

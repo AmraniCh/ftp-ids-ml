@@ -3,8 +3,23 @@
 
 {% block content %}
 
-<div class="mb-6">
+<div class="mb-6 flex items-center justify-between">
     <a href="{{ url_for('alerts') }}" class="text-xs text-gray-500 hover:text-gray-300">← back to alerts</a>
+
+    {% if alert.labeled %}
+        <span class="text-gray-500 text-sm">✓ already marked as normal</span>
+    {% else %}
+        <div class="flex gap-2">
+            <form action="{{ url_for('mark_normal') }}" method="post">
+                <input type="hidden" name="src_ip" value="{{ alert.src_ip }}">
+                <input type="hidden" name="start_time" value="{{ alert.start_time }}">
+                <button type="submit"
+                    class="px-3 py-1.5 text-xs border border-gray-800 hover:border-green-500 hover:text-green-500 transition-colors">
+                    mark as normal
+                </button>
+            </form>
+        </div>
+    {% endif %}
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -125,29 +140,6 @@
             <span class="tabular-nums">{{ alert.is_auth }}</span>
         </div>
     </div>
-</section>
-
-<section class="flex items-center gap-2">
-    {% if alert.labeled %}
-        <span class="text-gray-500 text-sm">✓ already marked as normal</span>
-    {% else %}
-        <form action="" method="post">
-            <input type="hidden" name="src_ip" value="{{ alert.src_ip }}">
-            <input type="hidden" name="start_time" value="{{ alert.start_time }}">
-            <button type="submit"
-                class="px-4 py-2 text-sm border border-gray-800 hover:border-green-500 hover:text-green-500 transition-colors">
-                mark as normal
-            </button>
-        </form>
-        <form action="" method="post">
-            <input type="hidden" name="src_ip" value="{{ alert.src_ip }}">
-            <input type="hidden" name="start_time" value="{{ alert.start_time }}">
-            <button type="submit"
-                class="px-4 py-2 text-sm border border-gray-800 hover:border-red-500 hover:text-red-500 transition-colors">
-                mark as anomaly
-            </button>
-        </form>
-    {% endif %}
 </section>
 
 {% endblock %}

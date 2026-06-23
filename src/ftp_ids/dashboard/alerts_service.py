@@ -50,3 +50,14 @@ def get_alert(src_ip, start_time):
 
             return alert
     return None
+
+
+def mark_alert_normal(src_ip, start_time):
+    storage = Storage()
+    alerts = storage.load_alerts()
+    match = alerts[
+        (alerts["src_ip"] == src_ip)
+        & (alerts["start_time"].astype(str) == start_time)
+    ]
+    if not match.empty:
+        storage.add_to_clean_pool(match)
