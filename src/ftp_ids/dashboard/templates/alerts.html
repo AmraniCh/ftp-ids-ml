@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Alerts · FTPGuard{% endblock %}
+
+{% block content %}
+<div class="flex items-baseline justify-between mb-6">
+    <h2 class="text-xs uppercase tracking-wider text-gray-500">alerts</h2>
+    <span class="text-xs text-gray-500">{{ alerts|length }} entries · newest first</span>
+</div>
+
+{% if alerts %}
+<div class="border border-gray-800 bg-gray-900 overflow-x-auto">
+    <table class="min-w-full text-sm">
+        <thead class="text-xs text-gray-500 uppercase tracking-wider">
+            <tr class="border-b border-gray-800">
+                <th class="text-left px-4 py-3 font-normal">start</th>
+                <th class="text-left px-4 py-3 font-normal">src ip</th>
+                <th class="text-left px-4 py-3 font-normal">user</th>
+                <th class="text-right px-4 py-3 font-normal">events</th>
+                <th class="text-right px-4 py-3 font-normal">score</th>
+                <th class="text-left px-4 py-3 font-normal">rules</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+        {% for a in alerts %}
+            <tr class="hover:bg-gray-950 {% if a.labeled %}opacity-50{% endif %}">
+                <td class="px-4 py-2 text-gray-500 tabular-nums whitespace-nowrap">{{ a.start_time }}</td>
+                <td class="px-4 py-2">{{ a.src_ip }}</td>
+                <td class="px-4 py-2">{{ a.user or '—' }}</td>
+                <td class="px-4 py-2 text-right tabular-nums">{{ a.n_events }}</td>
+                <td class="px-4 py-2 text-right tabular-nums font-semibold
+                    {% if a.score >= 0.7 %}text-red-500
+                    {% elif a.score >= 0.4 %}text-amber-500
+                    {% else %}text-gray-200{% endif %}">
+                    {{ "%.2f"|format(a.score) }}
+                </td>
+                <td class="px-4 py-2 text-amber-500 text-xs">{{ a.rules or '' }}</td>
+                <td class="px-4 py-2 text-right">
+                    
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="border border-gray-800 bg-gray-900 p-12 text-center text-gray-500 text-sm">
+    no alerts yet · run <span class="text-amber-500">ftp-ids watch</span> to start detecting
+</div>
+{% endif %}
+{% endblock %}

@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour
+from ftp_ids.dashboard.alerts_service import list_alerts, get_alert
 
 app = Flask(__name__)
 
@@ -10,6 +11,10 @@ def index():
         stats=compute_stats(),
         hourly=alerts_per_hour(),
     )
+
+@app.route("/alerts")
+def alerts():
+    return render_template("alerts.html", alerts=list_alerts())
 
 
 def serve(host: str = "127.0.0.1", port: int = 8080):
