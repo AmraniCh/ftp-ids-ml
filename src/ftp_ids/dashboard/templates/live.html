@@ -6,7 +6,7 @@
 <div class="flex items-baseline justify-between mb-6">
     <div>
         <h2 class="text-xs uppercase tracking-wider text-gray-500">live feed</h2>
-        <p class="text-xs text-gray-500 mt-1">polling every 2 seconds · new alerts highlighted</p>
+        <p class="text-xs text-gray-500 mt-1">polling every 2 seconds</p>
     </div>
     <button id="enable-notifs"
         class="px-3 py-1.5 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 transition-colors">
@@ -57,6 +57,7 @@
             alert("Browser does not support desktop notifications.");
             return;
         }
+        
         const perm = await Notification.requestPermission();
         if (perm === "granted") {
             notifsEnabled = true;
@@ -69,9 +70,15 @@
     function showToast(text) {
         toastBody.textContent = text;
         toastEl.classList.remove("opacity-0", "translate-x-8");
-        setTimeout(() => {
+        
+        const hideTimer = setTimeout(() => {
             toastEl.classList.add("opacity-0", "translate-x-8");
-        }, 4000);
+        }, 10000);
+        
+        toastEl.onclick = () => {
+            clearTimeout(hideTimer);
+            toastEl.classList.add("opacity-0", "translate-x-8");
+        };
     }
 
     function notify(alert) {
