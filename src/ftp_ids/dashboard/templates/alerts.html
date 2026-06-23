@@ -4,10 +4,12 @@
 {% block content %}
 <div class="flex items-baseline justify-between mb-6">
     <h2 class="text-xs uppercase tracking-wider text-gray-500">alerts</h2>
-    <span class="text-xs text-gray-500">{{ alerts|length }} entries · newest first</span>
+    <span class="text-xs text-gray-500">
+        {{ total }} total · page {{ page }} of {{ pages }}
+    </span>
 </div>
 
-{% if alerts %}
+{% if items %}
 <div class="border border-gray-800 bg-gray-900 overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="text-xs text-gray-500 uppercase tracking-wider">
@@ -22,7 +24,7 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-800">
-        {% for a in alerts %}
+        {% for a in items %}
             <tr class="hover:bg-gray-950 {% if a.labeled %}opacity-50{% endif %}">
                 <td class="px-4 py-2 text-gray-500 tabular-nums whitespace-nowrap">{{ a.start_time }}</td>
                 <td class="px-4 py-2">{{ a.src_ip }}</td>
@@ -36,13 +38,38 @@
                 </td>
                 <td class="px-4 py-2 text-amber-500 text-xs">{{ a.rules or '' }}</td>
                 <td class="px-4 py-2 text-right">
-                    
+                    {# action button goes here later (mark normal / view detail) #}
                 </td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
+
+{% if pages > 1 %}
+<div class="mt-4 flex gap-2 text-sm justify-center items-center">
+    {% if page > 1 %}
+        <a href="?page={{ page - 1 }}"
+           class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
+            prev
+        </a>
+    {% else %}
+        <span class="px-3 py-1 border border-gray-900 text-gray-700">prev</span>
+    {% endif %}
+
+    <span class="px-3 text-gray-500 tabular-nums">{{ page }} of {{ pages }}</span>
+
+    {% if page < pages %}
+        <a href="?page={{ page + 1 }}"
+           class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
+            next
+        </a>
+    {% else %}
+        <span class="px-3 py-1 border border-gray-900 text-gray-700">next</span>
+    {% endif %}
+</div>
+{% endif %}
+
 {% else %}
 <div class="border border-gray-800 bg-gray-900 p-12 text-center text-gray-500 text-sm">
     no alerts yet · run <span class="text-amber-500">ftp-ids watch</span> to start detecting

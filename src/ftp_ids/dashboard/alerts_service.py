@@ -1,6 +1,6 @@
 from ftp_ids.core.storage import Storage
 
-def list_alerts():
+def list_alerts(page=1, per_page=12):
     storage = Storage()
     alerts = storage.load_alerts()
     pool = storage.load_clean_pool()
@@ -17,7 +17,18 @@ def list_alerts():
         result.append(item)
 
     result.sort(key=lambda r: r.get("labeled", False))
-    return result
+
+    total = len(result)
+    start = (page - 1) * per_page
+    end = start + per_page
+    
+    return {
+        "items": result[start:end],
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "pages": (total + per_page - 1) // per_page,
+    }
 
 
 def get_alert(src_ip, start_time):

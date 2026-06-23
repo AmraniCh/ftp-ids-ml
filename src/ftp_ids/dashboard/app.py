@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour
 from ftp_ids.dashboard.alerts_service import list_alerts, get_alert
 
@@ -14,7 +14,9 @@ def index():
 
 @app.route("/alerts")
 def alerts():
-    return render_template("alerts.html", alerts=list_alerts())
+    page = int(request.args.get("page", 1))
+    data = list_alerts(page=page)
+    return render_template("alerts.html", **data)
 
 
 def serve(host: str = "127.0.0.1", port: int = 8080):
