@@ -8,12 +8,39 @@
 </head>
 
 <body class="bg-gray-950 text-gray-200 min-h-screen font-mono">
-    <main class="max-w-6xl mx-auto px-6 py-10">
-        <!-- <h1 class="text-xl text-white mb-8">FTPGuard</h1> -->
-
-        <h1 class="text-2xl font-bold mb-8">
+<header class="border-b border-gray-800">
+    <div class="max-w-6xl mx-auto px-6 flex items-baseline gap-8">
+        <a href="/" class="py-5 font-bold text-xl">
             <span class="text-white">FTP</span><span class="text-amber-500">Guard</span>
-        </h1>
+        </a>
+
+        <nav class="flex gap-1 text-sm">
+            <a href="/" class="px-4 py-5 border-b-2
+                {% if request.endpoint == 'index' %}
+                    border-amber-500 text-white
+                {% else %}
+                    border-transparent text-gray-500 hover:text-gray-300
+                {% endif %}">
+                Dashboard
+            </a>
+            <a href="/live" class="px-4 py-5 border-b-2
+                {% if request.endpoint == 'live' %}
+                    border-amber-500 text-white
+                {% else %}
+                    border-transparent text-gray-500 hover:text-gray-300
+                {% endif %}">
+                Live
+            </a>
+        </nav>
+
+        <div class="ml-auto py-5 text-xs text-gray-500">
+            <span class="text-green-500">●</span> watching
+        </div>
+    </div>
+</header>
+
+    <main class="max-w-6xl mx-auto px-6 py-10">
+        <h1 class="text-2xl text-white mb-8">Overview</h1>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
