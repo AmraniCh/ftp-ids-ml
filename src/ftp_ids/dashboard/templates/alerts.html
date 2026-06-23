@@ -38,18 +38,28 @@
                     {{ "%.2f"|format(a.score) }}
                 </td>
                 <td class="px-4 py-2 text-amber-500 text-xs">{{ a.rules or '' }}</td>
-                <td class="px-4 py-2">
+               <td class="px-4 py-2">
                     {% if a.labeled %}
-                        <span class="px-2 py-0.5 text-xs bg-green-500 text-gray-950 font-semibold">normal</span>
+                        <span class="px-2 py-0.5 text-xs border border-green-500 text-green-500 font-semibold">normal</span>
                     {% else %}
-                        <span class="px-2 py-0.5 text-xs bg-red-500 text-gray-950 font-semibold">attack</span>
+                        <span class="px-2 py-0.5 text-xs border border-red-500 text-red-500 font-semibold">attack</span>
                     {% endif %}
                 </td>
-                <td class="px-4 py-2 text-right">
+                <td class="px-4 py-2 text-left">
                     <a href="{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}"
-                    class="px-3 py-1 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400 transition-colors">
+                    class="px-2 py-1 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400 transition-colors">
                         view
                     </a>
+                     {% if not a.labeled %}
+                        <form action="{{ url_for('mark_normal') }}" method="post" class="inline">
+                            <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
+                            <input type="hidden" name="start_time" value="{{ a.start_time }}">
+                            <button type="submit"
+                                class="px-2 py-1 text-xs border border-gray-800 border-green-500 text-green-500 text-gray-400 transition-colors ml-1">
+                                mark normal
+                            </button>
+                        </form>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
