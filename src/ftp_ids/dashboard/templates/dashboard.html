@@ -1,1 +1,44 @@
-FTP-IDS 
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ftp-ids dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-gray-200 min-h-screen font-mono">
+    <main class="max-w-6xl mx-auto px-6 py-10">
+
+        <h1 class="text-xl text-white mb-8">ftp-ids dashboard</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+            <div class="border border-gray-800 bg-gray-900 p-5">
+                <div class="text-xs uppercase tracking-wider text-gray-500">events today</div>
+                <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.events_today }}</div>
+            </div>
+
+            {# 
+            <div class="border border-gray-800 bg-gray-900 p-5">
+                <div class="text-xs uppercase tracking-wider text-gray-500">alerts today</div>
+                <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.alerts_today }}</div>
+            </div>
+
+            <div class="border border-gray-800 bg-gray-900 p-5">
+                <div class="text-xs uppercase tracking-wider text-gray-500">pending review</div>
+                <div class="text-3xl mt-2 tabular-nums {% if stats.pending > 0 %}text-amber-500{% else %}text-white{% endif %}">
+                    {{ stats.pending }}
+                </div>
+            </div>
+
+            <div class="border border-gray-800 bg-gray-900 p-5">
+                <div class="text-xs uppercase tracking-wider text-gray-500">unique ips today</div>
+                <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.unique_ips_today }}</div>
+            </div>
+
+            #}
+
+        </div>
+
+    </main>
+</body>
+</html>
