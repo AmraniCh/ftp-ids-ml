@@ -23,7 +23,21 @@ def compute_stats():
         "unique_ips_today": len(unique_ips_today),
     }
 
-    
+
+def alerts_per_hour():
+    storage = Storage()
+    alerts = storage.load_alerts()
+    today = date.today().isoformat()
+
+    buckets = [0] * 24
+    for _, row in alerts.iterrows():
+        ts = str(row["start_time"])
+        if ts.startswith(today):
+            hour = int(ts.split("T")[1][:2])
+            buckets[hour] += 1
+
+    return buckets
+
 def _count_events_today():
     # TODO raise error if the logs file not exist
     today_prefix = date.today().strftime("%a %b %e")

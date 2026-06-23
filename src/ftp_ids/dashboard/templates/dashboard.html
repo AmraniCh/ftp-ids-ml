@@ -1,43 +1,81 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>{% block title %}FTPGuard{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-950 text-gray-200 min-h-screen font-mono">
     <main class="max-w-6xl mx-auto px-6 py-10">
-        <h1 class="text-xl text-white mb-8">FTPGuard</h1>
+        <!-- <h1 class="text-xl text-white mb-8">FTPGuard</h1> -->
+
+        <h1 class="text-2xl font-bold mb-8">
+            <span class="text-white">FTP</span><span class="text-amber-500">Guard</span>
+        </h1>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-            <div class="border border-gray-800 bg-gray-900 p-5">
+            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
                 <div class="text-xs uppercase tracking-wider text-gray-500">events today</div>
                 <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.events_today }}</div>
             </div>
 
-         
-            <div class="border border-gray-800 bg-gray-900 p-5">
+
+            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
                 <div class="text-xs uppercase tracking-wider text-gray-500">alerts today</div>
                 <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.alerts_today }}</div>
             </div>
 
-            <div class="border border-gray-800 bg-gray-900 p-5">
+            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
                 <div class="text-xs uppercase tracking-wider text-gray-500">pending review</div>
-                <div class="text-3xl mt-2 tabular-nums {% if stats.pending > 0 %}text-amber-500{% else %}text-white{% endif %}">
+                <div
+                    class="text-3xl mt-2 tabular-nums {% if stats.pending > 0 %}text-amber-500{% else %}text-white{% endif %}">
                     {{ stats.pending }}
                 </div>
             </div>
 
-            <div class="border border-gray-800 bg-gray-900 p-5">
+            <div class="border border-gray-800 hover:border-gray-700 bg-gray-900 p-5 transition-colors">
                 <div class="text-xs uppercase tracking-wider text-gray-500">unique ips today</div>
                 <div class="text-3xl text-white mt-2 tabular-nums">{{ stats.unique_ips_today }}</div>
             </div>
 
-            
-
         </div>
 
+        <section class="mt-8 border border-gray-800 bg-gray-900 p-6">
+            <h2 class="text-xs uppercase tracking-wider text-gray-500 mb-4">alerts per hour · today</h2>
+            <canvas id="hourlyChart" height="80"></canvas>
+        </section>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('hourlyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: 24 }, (_, h) => h.toString().padStart(2, '0') + ':00'),
+                datasets: [{
+                    data: {{ hourly|tojson }},
+                    borderColor: '#f59e0b',
+                    backgroundColor: '#f59e0b22',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' } },
+                    y: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' }, beginAtZero: true }
+                }
+            }
+        });
+    </script>
+
 </body>
+
 </html>
