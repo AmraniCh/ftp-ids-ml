@@ -14,10 +14,12 @@ def compute_stats():
             alerts_today += 1
             unique_ips_today.add(row['src_ip'])
 
+    clean_pool = storage.load_clean_pool()
+
     return {
         "events_today": _count_events_today(),
         "alerts_today": alerts_today,
-        # "pending": pending,
+        "pending": len(alerts) - len(clean_pool),
         "unique_ips_today": len(unique_ips_today),
     }
 
