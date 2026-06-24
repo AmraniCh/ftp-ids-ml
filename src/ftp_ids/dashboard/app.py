@@ -76,7 +76,7 @@ def unmark():
 def retrain():
     result = retrain_model()
     if result["status"] == "ok":
-        flash("Apply done · " + result["output"].strip().split('\n')[-1], "success")
+        flash("Apply done · " + result["output"], "success")
     else:
         flash("Error · " + result["message"], "error")
     return redirect(url_for("alerts"))

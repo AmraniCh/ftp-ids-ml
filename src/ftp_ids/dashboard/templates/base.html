@@ -106,10 +106,23 @@
 
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
-        <div class="mb-4 px-4 py-3 border whitespace-pre-line
-                {% if category == 'success' %}border-green-500/40 text-green-400 bg-green-500/10
-                {% else %}border-red-500/40 text-red-400 bg-red-500/10{% endif %}">
+        <div class="mb-4 border px-4 py-3
+            {% if category == 'success' %}border-green-500/40 text-green-400 bg-green-500/10
+            {% else %}border-red-500/40 text-red-400 bg-red-500/10{% endif %}">
+
+            {% set lines = message.strip().split('\n') %}
+            {% if lines | length > 1 %}
+            <details>
+                <summary class="cursor-pointer flex items-center justify-between list-none">
+                    <span>{{ lines[-1] }}</span>
+                    <span class="text-xs text-gray-500 hover:text-gray-300">show details</span>
+                </summary>
+                <pre
+                    class="mt-3 p-3 bg-gray-950 text-gray-400 whitespace-pre-wrap text-xs overflow-x-auto">{{ message }}</pre>
+            </details>
+            {% else %}
             {{ message }}
+            {% endif %}
         </div>
         {% endfor %}
         {% endwith %}
