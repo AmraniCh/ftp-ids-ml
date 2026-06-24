@@ -4,7 +4,9 @@
 <head>
     <meta charset="utf-8">
     <title>{% block title %}FTPGuard{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <style>
         /* Firefox */
         * {
@@ -33,6 +35,17 @@
 
         ::-webkit-scrollbar-corner {
             background: #0a0a0a;
+        }
+    </style>
+    <style>
+        .toastify {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
+            border: 1px solid #f59e0b !important;
+            border-radius: 0 !important;
+            background: #111827 !important;
+            color: #f3f4f6 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+            padding: 0.75rem 1rem !important;
         }
     </style>
 </head>
@@ -100,6 +113,51 @@
     </main>
 
     {% block scripts %}{% endblock %}
+
+    {% if is_watching %}
+    <script>
+        (function () {
+            const since = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+            function hasSeen(key) {
+                return sessionStorage.getItem("seen:" + key) !== null;
+            }
+            function markSeen(key) {
+                sessionStorage.setItem("seen:" + key, "1");
+            }
+
+            async function poll() {
+                try {
+                    const res = await fetch(`/api/alerts/recent?since=${encodeURIComponent(since)}`);
+                    const data = await res.json();
+                    for (const a of data) {
+                        const key = `${a.src_ip}|${a.start_time}`;
+                        if (!hasSeen(key)) {
+                            markSeen(key);
+                            notify(a);
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            function notify(a) {
+                const score = Number(a.score).toFixed(2);
+                Toastify({
+                    text: `⚠ ${a.src_ip} · ${a.user || "—"} · score ${score}`,
+                    duration: -1,
+                    gravity: "top",
+                    position: "right",
+                    stopOnFocus: true,
+                    close: true,                       
+                    onClick: function () { this.hideToast(); } 
+                }).showToast();
+            }
+
+            poll();
+            setInterval(poll, 2000);
+        })();
+    </script>
+    {% endif %}
 </body>
 
 </html>

@@ -23,10 +23,6 @@
         <h2 class="text-xs uppercase tracking-wider text-gray-500">live feed</h2>
         <p class="text-xs text-gray-500 mt-1">polling every 2 seconds</p>
     </div>
-    <button id="enable-notifs"
-        class="px-3 py-1.5 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 transition-colors">
-        enable notifications
-    </button>
 </div>
 
 <div class="grid grid-cols-3 gap-4 mb-6">
@@ -64,6 +60,8 @@
     <div id="toast-body" class="text-sm text-white"></div>
 </div>
 
+{% endif %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -74,50 +72,6 @@
 
     const toastEl = document.getElementById("toast");
     const toastBody = document.getElementById("toast-body");
-    const notifBtn = document.getElementById("enable-notifs");
-
-    if (Notification.permission === "granted") {
-        notifsEnabled = true;
-        notifBtn.textContent = "✓ notifications on";
-        notifBtn.classList.add("text-green-500", "border-green-500");
-    }
-
-    // notifications
-    notifBtn.addEventListener("click", async () => {
-        if (!("Notification" in window)) {
-            alert("Browser does not support desktop notifications.");
-            return;
-        }
-
-        const perm = await Notification.requestPermission();
-        if (perm === "granted") {
-            notifsEnabled = true;
-            notifBtn.textContent = "✓ notifications on";
-            notifBtn.classList.add("text-green-500", "border-green-500");
-        }
-    });
-
-    function showToast(text) {
-        toastBody.textContent = text;
-        toastEl.classList.remove("opacity-0", "translate-x-8");
-        
-        const hideTimer = setTimeout(() => {
-            toastEl.classList.add("opacity-0", "translate-x-8");
-        }, 10000);
-        
-        toastEl.onclick = () => {
-            clearTimeout(hideTimer);
-            toastEl.classList.add("opacity-0", "translate-x-8");
-        };
-    }
-
-    function notify(alert) {
-        const text = `${alert.src_ip} · ${alert.user || "—"} · score ${Number(alert.score).toFixed(2)}`;
-        showToast(text);
-        if (notifsEnabled) {
-            new Notification("FTPGuard alert", { body: text });
-        }
-    }
 
     function row(a) {
         const score = Number(a.score);
@@ -136,9 +90,9 @@
             </div>`;
     }
 
+    const since = new Date().toISOString().slice(0, 19).replace("T", " ");
     async function poll() {
         try {
-            const since = new Date().toISOString().slice(0, 19).replace("T", " ");
             const res = await fetch(`/api/alerts/recent?since=${encodeURIComponent(since)}`);
             const data = await res.json();
 
@@ -151,17 +105,6 @@
                 return;
             }
 
-            const isFirstPoll = seen.size === 0;
-            for (const a of data) {
-                const key = `${a.src_ip}|${a.start_time}`;
-                if (!seen.has(key)) {
-                    seen.add(key);
-                    if (!isFirstPoll) {
-                        newCount += 1;
-                        notify(a);
-                    }
-                }
-            }
             document.getElementById("new-count").textContent = newCount;
 
             feed.innerHTML = data.map(row).join("");
