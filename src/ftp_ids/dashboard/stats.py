@@ -51,6 +51,3 @@ def _count_events_today():
     today_prefix = date.today().strftime("%a %b %e")
     with open(config.LOGS_PATH, "r", errors="replace") as f:
         return sum(1 for line in f if line.startswith(today_prefix))
-
-
-print(compute_stats())
