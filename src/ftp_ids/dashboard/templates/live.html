@@ -3,6 +3,21 @@
 
 {% block content %}
 
+{% if not is_watching %}
+
+<div class="border border-gray-800 bg-gray-900 p-12 text-center">
+    <div class="text-amber-500 text-2xl mb-3">●</div>
+    <h2 class="text-lg text-white mb-2">No watcher running</h2>
+    <p class="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+        Start the detector on the server to see live alerts appear here.
+    </p>
+    <div class="inline-block px-4 py-2 border border-gray-800 bg-gray-950 text-amber-500 text-sm">
+        ftp-ids watch
+    </div>
+</div>
+
+{% else %}
+
 <div class="flex items-baseline justify-between mb-6">
     <div>
         <h2 class="text-xs uppercase tracking-wider text-gray-500">live feed</h2>
