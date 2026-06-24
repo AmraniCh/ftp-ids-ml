@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour, is_watch_running
-from ftp_ids.dashboard.alerts_service import list_alerts, get_alert, mark_alert_normal
+from ftp_ids.dashboard.alerts_service import list_alerts, get_alert, mark_alert_normal, unmark_alert_normal
 from datetime import datetime
 from ftp_ids.core.storage import Storage
 from flask import jsonify
@@ -64,7 +64,10 @@ def recent_alerts():
     df = df.sort_values("start_time", ascending=False).head(100)
     return jsonify(df.fillna("").to_dict(orient="records"))
 
-from ftp_ids.dashboard.stats import compute_stats
+@app.route("/alerts/unmark", methods=["POST"])
+def unmark():
+    unmark_alert_normal(request.form["src_ip"], request.form["start_time"])
+    return redirect(url_for("alerts"))
 
 @app.context_processor
 def inject_globals():

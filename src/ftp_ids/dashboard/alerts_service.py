@@ -1,4 +1,5 @@
 from ftp_ids.core.storage import Storage
+import ftp_ids.config as config
 
 def list_alerts(page=1, per_page=12):
     storage = Storage()
@@ -61,3 +62,13 @@ def mark_alert_normal(src_ip, start_time):
     ]
     if not match.empty:
         storage.add_to_clean_pool(match)
+
+
+def unmark_alert_normal(src_ip, start_time):
+    storage = Storage()
+    pool = storage.load_clean_pool()
+    keep = pool[
+        ~((pool["src_ip"] == src_ip)
+        & (pool["start_time"].astype(str) == start_time))
+    ]
+    keep.to_csv(config.CLEAN_POOL_PATH, index=False)
