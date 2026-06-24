@@ -1,11 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour, is_watch_running
 from ftp_ids.dashboard.alerts_service import list_alerts, get_alert, mark_alert_normal, unmark_alert_normal
 from datetime import datetime
 from ftp_ids.core.storage import Storage
 from flask import jsonify
+from ftp_ids.dashboard.retrain_service import retrain_model
 
 app = Flask(__name__)
+app.secret_key = "dev-secret-key" # for flash messages
 
 @app.template_filter("ts")
 def ts(value):
@@ -67,6 +69,16 @@ def recent_alerts():
 @app.route("/alerts/unmark", methods=["POST"])
 def unmark():
     unmark_alert_normal(request.form["src_ip"], request.form["start_time"])
+    return redirect(url_for("alerts"))
+
+
+@app.route("/retrain", methods=["POST"])
+def retrain():
+    result = retrain_model()
+    if result["status"] == "ok":
+        flash("Apply done · " + result["output"].strip().split('\n')[-1], "success")
+    else:
+        flash("Error · " + result["message"], "error")
     return redirect(url_for("alerts"))
 
 @app.context_processor

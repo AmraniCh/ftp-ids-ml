@@ -73,17 +73,29 @@
 
             <div class="ml-auto py-5 text-xs">
                 {% if is_watching %}
-                    <span class="text-green-500">●</span>
-                    <span class="text-gray-500">watching</span>
+                <span class="text-green-500">●</span>
+                <span class="text-gray-500">watching</span>
                 {% else %}
-                    <span class="text-gray-700">●</span>
-                    <span class="text-gray-700">idle</span>
+                <span class="text-gray-700">●</span>
+                <span class="text-gray-700">idle</span>
                 {% endif %}
             </div>
         </div>
     </header>
 
     <main class="max-w-6xl mx-auto px-6 py-10">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="mb-4 px-4 py-3 border whitespace-pre-line
+                {% if category == 'success' %}border-green-500/40 text-green-400 bg-green-500/10
+                {% else %}border-red-500/40 text-red-400 bg-red-500/10{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endwith %}
+
+
         {% block content %}{% endblock %}
     </main>
 

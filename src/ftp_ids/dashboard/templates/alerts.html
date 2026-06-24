@@ -3,10 +3,19 @@
 
 {% block content %}
 <div class="flex items-baseline justify-between mb-6">
-    <h2 class="text-xs uppercase tracking-wider text-gray-500">alerts</h2>
-    <span class="text-xs text-gray-500">
-        {{ total }} total · page {{ page }} of {{ pages }}
-    </span>
+    <div>
+        <h2 class="text-xs uppercase tracking-wider text-gray-500">alerts</h2>
+        <span class="text-xs text-gray-500">
+            {{ total }} total · page {{ page }} of {{ pages }}
+        </span>
+    </div>
+
+    <form action="{{ url_for('retrain') }}" method="post" class="inline">
+        <button type="submit"
+            class="px-3 py-1 text-xs border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-gray-950 transition-colors">
+            Apply
+        </button>
+    </form>
 </div>
 
 {% if items %}
