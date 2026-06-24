@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour
+from ftp_ids.dashboard.stats import compute_stats, alerts_per_hour, is_watch_running
 from ftp_ids.dashboard.alerts_service import list_alerts, get_alert, mark_alert_normal
 from datetime import datetime
 from ftp_ids.core.storage import Storage
@@ -63,6 +63,12 @@ def recent_alerts():
     
     df = df.sort_values("start_time", ascending=False).head(100)
     return jsonify(df.fillna("").to_dict(orient="records"))
+
+from ftp_ids.dashboard.stats import compute_stats
+
+@app.context_processor
+def inject_globals():
+    return {"is_watching": is_watch_running()}
 
 def serve(host: str = "127.0.0.1", port: int = 8080):
     print(f"Dashboard running at http://{host}:{port}")

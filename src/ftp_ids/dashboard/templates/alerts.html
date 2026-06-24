@@ -25,7 +25,7 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-800">
-        {% for a in items %}
+            {% for a in items %}
             <tr class="hover:bg-gray-950 {% if a.labeled %}opacity-50{% endif %}">
                 <td class="px-4 py-2 text-gray-500 tabular-nums whitespace-nowrap">{{ a.start_time | ts }}</td>
                 <td class="px-4 py-2">{{ a.src_ip }}</td>
@@ -38,31 +38,32 @@
                     {{ "%.2f"|format(a.score) }}
                 </td>
                 <td class="px-4 py-2 text-amber-500 text-xs">{{ a.rules or '' }}</td>
-               <td class="px-4 py-2">
+
+                <td class="px-4 py-2">
                     {% if a.labeled %}
-                        <span class="px-2 py-0.5 text-xs border border-green-500 text-green-500 font-semibold">normal</span>
+                    <span class="px-2 py-0.5 text-xs bg-green-500/20 text-green-400 font-semibold rounded">normal</span>
                     {% else %}
-                        <span class="px-2 py-0.5 text-xs border border-red-500 text-red-500 font-semibold">attack</span>
+                    <span class="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 font-semibold rounded">attack</span>
                     {% endif %}
                 </td>
                 <td class="px-4 py-2 text-left">
                     <a href="{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}"
-                    class="px-2 py-1 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400 transition-colors">
+                        class="px-2 py-1 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400 transition-colors">
                         view
                     </a>
-                     {% if not a.labeled %}
-                        <form action="{{ url_for('mark_normal') }}" method="post" class="inline">
-                            <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
-                            <input type="hidden" name="start_time" value="{{ a.start_time }}">
-                            <button type="submit"
-                                class="px-2 py-1 text-xs border border-gray-800 border-green-500 text-green-500 text-gray-400 transition-colors ml-1">
-                                mark normal
-                            </button>
-                        </form>
+                    {% if not a.labeled %}
+                    <form action="{{ url_for('mark_normal') }}" method="post" class="inline">
+                        <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
+                        <input type="hidden" name="start_time" value="{{ a.start_time }}">
+                        <button type="submit"
+                            class="px-2 py-1 text-xs border border-gray-800 hover:border-green-500 hover:text-green-500 text-gray-400 transition-colors ml-1">
+                            mark normal
+                        </button>
+                    </form>
                     {% endif %}
                 </td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
 </div>
@@ -70,24 +71,23 @@
 {% if pages > 1 %}
 <div class="mt-4 flex gap-2 text-sm justify-center items-center">
     {% if page > 1 %}
-        <a href="?page={{ page - 1 }}"
-           class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
-            prev
-        </a>
+    <a href="?page={{ page - 1 }}"
+        class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
+        prev
+    </a>
     {% else %}
-        <span class="px-3 py-1 border border-gray-900 text-gray-700">prev</span>
+    <span class="px-3 py-1 border border-gray-900 text-gray-700">prev</span>
     {% endif %}
 
     <span class="px-3 text-gray-500 tabular-nums">{{ page }} of {{ pages }}</span>
 
-    {% if page < pages %}
-        <a href="?page={{ page + 1 }}"
-           class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
-            next
+    {% if page < pages %} <a href="?page={{ page + 1 }}"
+        class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
+        next
         </a>
-    {% else %}
+        {% else %}
         <span class="px-3 py-1 border border-gray-900 text-gray-700">next</span>
-    {% endif %}
+        {% endif %}
 </div>
 {% endif %}
 

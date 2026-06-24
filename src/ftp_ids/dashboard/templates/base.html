@@ -72,12 +72,12 @@
             </nav>
 
             <div class="ml-auto py-5 text-xs">
-                {% if stats and stats.is_watching %}
-                <span class="text-green-500">●</span>
-                <span class="text-gray-500">watching</span>
+                {% if is_watching %}
+                    <span class="text-green-500">●</span>
+                    <span class="text-gray-500">watching</span>
                 {% else %}
-                <span class="text-gray-700">●</span>
-                <span class="text-gray-700">idle</span>
+                    <span class="text-gray-700">●</span>
+                    <span class="text-gray-700">idle</span>
                 {% endif %}
             </div>
         </div>

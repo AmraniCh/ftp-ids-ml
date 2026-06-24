@@ -17,14 +17,11 @@ def compute_stats():
 
     clean_pool = storage.load_clean_pool()
 
-    print("is watching: ", is_watch_running())
-
     return {
         "events_today": _count_events_today(),
         "alerts_today": alerts_today,
         "pending": len(alerts) - len(clean_pool),
         "unique_ips_today": len(unique_ips_today),
-        "is_watching": is_watch_running(),
     }
 
 
