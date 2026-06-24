@@ -63,7 +63,7 @@ def recent_alerts():
         normalized = df["start_time"].astype(str).str.replace("T", " ")
         df = df[normalized >= since.replace("T", " ")]
     
-    df = df.sort_values("start_time", ascending=False).head(100)
+    df = df.sort_values("start_time", ascending=False).head(50)
     return jsonify(df.fillna("").to_dict(orient="records"))
 
 @app.route("/alerts/unmark", methods=["POST"])
@@ -84,6 +84,10 @@ def retrain():
 @app.context_processor
 def inject_globals():
     return {"is_watching": is_watch_running()}
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html"), 404
 
 def serve(host: str = "127.0.0.1", port: int = 8080):
     print(f"Dashboard running at http://{host}:{port}")
