@@ -35,6 +35,8 @@ def build_sessions(events):
             # no explicit boundry (still open ...)
             sessions.append(_make_session(src_ip, current))
 
+    sessions.sort(key=lambda s: s["start_time"])
+
     return sessions
 
 
