@@ -27,6 +27,31 @@ class Storage:
 
         self._append_row(config.ALERTS_PATH, row, fieldnames)
 
+    def append_session(self, session, score, features, rule_alerts=[]):
+        row = {
+            "src_ip":     session["src_ip"],
+            "user":       session["user"] or "",
+            "start_time": session["start_time"].isoformat(),
+            "end_time":   session["end_time"].isoformat(),
+            "n_events":   session["n_events"],
+            "end_type":   session["end_type"],
+            "score":      round(score, 4),
+            "rules":      ",".join(r['rule_id'] for r in rule_alerts),
+            **features,
+        }
+
+        fieldnames = [
+            "src_ip", "user", "start_time", "end_time", "n_events", "end_type", "score", "rules",
+            *FEATURE_NAMES
+        ]
+
+        self._append_row(config.SESSIONS_PATH, row, fieldnames)
+
+    def clear_sessions(self):
+        if Path(config.SESSIONS_PATH).exists():
+            Path(config.SESSIONS_PATH).unlink()
+
+
     def load_alerts(self):
         if not Path(config.ALERTS_PATH).exists():
             return pd.DataFrame()
@@ -62,6 +87,13 @@ class Storage:
     def clear_clean_pool(self):
         if Path(config.CLEAN_POOL_PATH).exists():
             Path(config.CLEAN_POOL_PATH).unlink()
+
+    def load_logs(self):
+        lines = []
+        with open(config.LOGS_PATH, "r") as file:
+            for line in file:
+                lines.append(line)
+        return lines
 
     def _append_row(self, path, row, fieldnames):
         file_exists = Path(path).exists()

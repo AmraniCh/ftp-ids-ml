@@ -1,7 +1,8 @@
 from pathlib import Path
 
 DAEMON_LOG_PATHS = {
-    "vsftpd":  "/var/log/vsftpd.log",
+    # "vsftpd":  "/var/log/vsftpd.log",
+    "vsftpd":  "data/raw/test.log",
 }
 
 def _autodetect_log_path() -> str | None:
@@ -13,7 +14,8 @@ def _autodetect_log_path() -> str | None:
 
 LOGS_PATH = _autodetect_log_path()
 MODEL_PATH = "data/models/iso_forest.pkl"
-CONTAMINATION = 0.05 
+CONTAMINATION = 0.05
 
 ALERTS_PATH     = "data/reports/alerts.csv"
 CLEAN_POOL_PATH = "data/reports/clean_pool.csv"
+SESSIONS_PATH = "data/reports/sessions.csv"

@@ -19,7 +19,6 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # ftp-ids parse [--log PATH] — parse a log and show stats
     parse_p = subparsers.add_parser("parse", help="Parse a log file and show stats")
     parse_p.add_argument("--log", default=config.LOGS_PATH, help="Path to FTP log file")
 
@@ -35,7 +34,7 @@ def main():
 
     watch_p = subparsers.add_parser("watch", description="Watch the specified log and score session in live")
     watch_p.add_argument("--log", default=config.LOGS_PATH)
-    watch_p.add_argument("--threshold", type=float, default=0.7) 
+    watch_p.add_argument("--threshold", type=float, default=0.6) 
     
     correct_p = subparsers.add_parser("correct", help="Apply admin labels from alerts.csv to the clean pool")
     
@@ -105,7 +104,7 @@ def run_sessions(log_path, show: bool = False):
     print(f"{'SRC_IP':<16} {'USER':<20} {'END':<8} {'EVENTS':>6}  {'START':<19}  {'END':<19}")
     
     for s in sessions:
-        print(f"{s['src_ip']:<16} {s['user'] or '-':<20} {s['end_type']:<8} "
+        print(f"{s['src_ip']:<16} {s['user'] or 'N/A':<20} {s['end_type']:<8} "
               f"{s['n_events']:>6}  {s['start_time']}  {s['end_time']}")
 
     return sessions
@@ -138,16 +137,30 @@ def run_train(log_path):
     
     storage = Storage()
     storage.clear_alerts()
+    storage.clear_sessions()
     # storage.clear_clean_pool()
     # TODO threshold is hardcoded here
+
     for i,s in enumerate(sessions):
+        flags = []
+        rule_engine = RuleEngine(s)
+        all_rules = rule_engine.check()
+        rules_matched = [r for r in all_rules if r['matched']]
+                
         score = dt.score(s)
-        if score >= 0.7:
-            features = dt.extractor.extract(s)
+        features = dt.extractor.extract(s)
+
+        if score >= 0.6:
+            flags.append(f"ML ({score:.2f})")
+
+        flags.extend(f"RE ({r['rule_id']})" for r in rules_matched)
+
+        if score >= 0.6:
             storage.append_alert(s, score, features)
-            print(f"{i}: ALERT  {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
+            print(f"{i}: ALERT  {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'} {', '.join(flags)}")
         else:
-            print(f"{i}: ok    {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'}")
+            print(f"{i}: ok    {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'} {', '.join(flags)}")
+        storage.append_session(s, score, features, rules_matched)
 
 
 def run_watch(log_path: str, threshold: float):
@@ -197,7 +210,7 @@ def run_watch(log_path: str, threshold: float):
             seen_session_keys.add(key)
 
             flags = []
-            if score >= 0.5 or rules_matched:
+            if score >= threshold or rules_matched:
                 features = detector.extractor.extract(session)
                 storage.append_alert(session, score, features, rules_matched)
                     
