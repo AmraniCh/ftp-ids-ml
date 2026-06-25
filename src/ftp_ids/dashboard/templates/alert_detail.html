@@ -34,7 +34,7 @@
     <div class="border border-gray-800 bg-gray-900 p-5">
         <div class="text-xs uppercase tracking-wider text-gray-500">score</div>
         <div class="text-xl mt-2 tabular-nums font-semibold
-            {% if alert.score >= 0.7 %}text-red-500
+            {% if alert.score >= 0.6 %}text-red-500
             {% elif alert.score >= 0.4 %}text-amber-500
             {% else %}text-white{% endif %}">
             {{ "%.2f"|format(alert.score) }}

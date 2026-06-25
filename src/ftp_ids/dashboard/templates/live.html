@@ -75,7 +75,7 @@
 
     function row(a) {
         const score = Number(a.score);
-        const scoreClass = score >= 0.7 ? "text-red-500" : score >= 0.4 ? "text-amber-500" : "text-gray-200";
+        const scoreClass = score >= 0.6 ? "text-red-500" : score >= 0.4 ? "text-amber-500" : "text-gray-200";
         const rules = a.rules
             ? `<span class="text-amber-500 text-xs">${a.rules}</span>`
             : `<span class="text-gray-700 text-xs">—</span>`;

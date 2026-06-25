@@ -48,7 +48,7 @@
                 <td class="px-4 py-2">{{ a.user or '—' }}</td>
                 <td class="px-4 py-2 text-right tabular-nums">{{ a.n_events }}</td>
                 <td class="px-4 py-2 text-right tabular-nums font-semibold
-                    {% if a.score >= 0.7 %}text-red-500
+                    {% if a.score >= 0.6 %}text-red-500
                     {% elif a.score >= 0.4 %}text-amber-500
                     {% else %}text-gray-200{% endif %}">
                     {{ "%.2f"|format(a.score) }}
