@@ -1,17 +1,6 @@
 from pprint import pprint
 import json
 
-"""
-Feature extractor: converts session dicts into numeric feature vectors for the ML detector.
-
-Each feature is motivated by an attack behavior:
-  failed_logins/fail_ratio -> brute force
-  garbage_cmd_ratio        -> protocol confusion
-  total_bytes, ...         -> data exfiltration
-  night_*                  -> off-hours access
-  abrupt_disconnect        -> scripted/hostile clients
-"""
-
 # all features names
 FEATURE_NAMES = [
     "total_events", "failed_logins", "downloads", "uploads",
@@ -59,7 +48,7 @@ class FeatureExtractor:
         events = session['events']
 
         total_events  = session['n_events']
-
+        
         failed_logins  = self._count_events(events, 'FAIL_LOGIN')
         downloads      = self._count_events(events, 'OK_DOWNLOAD')
         uploads        = self._count_events(events, 'OK_UPLOAD')
