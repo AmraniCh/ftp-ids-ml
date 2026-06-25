@@ -11,6 +11,8 @@ import time
 from ftp_ids.core.storage import Storage
 from ftp_ids.core.rule_engine import RuleEngine
 from ftp_ids.dashboard.app import serve
+import csv
+import io
 
 def main():
     parser = argparse.ArgumentParser(
@@ -28,6 +30,7 @@ def main():
 
     extract_p = subparsers.add_parser("extract", help="Extract features from sessions")
     extract_p.add_argument("--log", default=config.LOGS_PATH)
+    extract_p.add_argument("--metadata", action="store_true", help="Include session metadata columns")
     
     train_p = subparsers.add_parser("train", help="Train the model on the spcified FTP logs")
     train_p.add_argument("--log", default=config.LOGS_PATH)
@@ -110,16 +113,50 @@ def run_sessions(log_path, show: bool = False):
     return sessions
 
 # features extracting
-def run_extract(log_path, show: bool = False):
+def run_extract(log_path, show: bool = False, include_metadata: bool = True):
     events = run_parse(log_path, output=False)
     sessions = build_sessions(events)
 
-    if not sessions: 
-        return []
+    if not sessions:
+        return ""
 
     fe = FeatureExtractor()
-    featues = fe.extract_batch(sessions)
-    pprint(featues)
+    features = fe.extract_batch(sessions)
+
+    if show:
+        from pprint import pprint
+        pprint(features)
+
+    output = io.StringIO()
+
+    if include_metadata:
+        fieldnames = [
+            "session_id", "src_ip", "user", "start_time", "end_time",
+            "n_events", "end_type", *FEATURE_NAMES, "label"
+        ]
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for idx, (session, feat) in enumerate(zip(sessions, features)):
+            row = {
+                "session_id": idx,
+                "src_ip": session["src_ip"],
+                "user": session["user"] or "",
+                "start_time": session["start_time"].isoformat(),
+                "end_time": session["end_time"].isoformat(),
+                "n_events": session["n_events"],
+                "end_type": session["end_type"],
+                **feat,
+                "label": '',
+            }
+            writer.writerow(row)
+    else:
+        writer = csv.DictWriter(output, fieldnames=FEATURE_NAMES)
+        writer.writeheader()
+        writer.writerows(features)
+
+    print(output.getvalue())
+
 
 
 def run_train(log_path):
