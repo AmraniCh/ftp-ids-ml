@@ -2,7 +2,7 @@ from pathlib import Path
 
 DAEMON_LOG_PATHS = {
     # "vsftpd":  "/var/log/vsftpd.log",
-    "vsftpd":  "data/raw/test.log",
+    "vsftpd":  "data/samples/vsftpd.log", # for dev setup
 }
 
 def _autodetect_log_path() -> str | None:
