@@ -4,6 +4,11 @@
 
 A host-based intrusion detection system for FTP servers. It combines an Isolation Forest ML model with a 5-rule signature engine and a human-in-the-loop (HITL) feedback loop.
 
+## Dataset
+
+the dataset `data/samples/dataset.csv` contains 109 sessions with both **metadata** (for inspection) and **ML-ready numeric features**.
+98 normal sessions from production GitHub Actions deployment traffic, 11 anomalous sessions (failed logins, anonymous access).
+
 ## How it works
 
 1. The parser reads vsftpd log lines and extracts structured events.
@@ -16,7 +21,7 @@ A host-based intrusion detection system for FTP servers. It combines an Isolatio
 
 ## Rule engine (5 rules)
 
-Supported rules: 
+Supported rules:
 
 - VSFTPD_234_BACKDOOR: detects CVE-2011-2523 exploit attempts (USER with `:)` suffix).
 - FTP_BOUNCE_MGLNDD: detects MGLNDD scanner probes.
