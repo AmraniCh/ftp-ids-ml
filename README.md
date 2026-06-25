@@ -51,9 +51,9 @@ src/ftp_ids/
         retrain_service.py  # retrain via subprocess
         templates/          # Jinja2 templates (6 pages)
 data/
-    samples/                # sample log files
+    samples/                # sample log files and datasets
     models/                 # trained model (.pkl)
-    reports/                # alerts.csv, clean_pool.csv
+    reports/                # alerts.csv, clean_pool.csv, sessions.csv
 notebooks/
     eda.ipynb               # exploratory data analysis
     evaluation.ipynb        # model evaluation
