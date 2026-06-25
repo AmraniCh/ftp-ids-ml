@@ -153,9 +153,8 @@ def run_train(log_path):
         if score >= 0.6:
             flags.append(f"ML ({score:.2f})")
 
-        flags.extend(f"RE ({r['rule_id']})" for r in rules_matched)
-
-        if score >= 0.6:
+        if score >= 0.6 or rules_matched:
+            flags.extend(f"RE ({r['rule_id']})" for r in rules_matched)
             storage.append_alert(s, score, features)
             print(f"{i}: ALERT  {score:.2f}  {s['src_ip']} user={s['user'] or 'N/A'} {', '.join(flags)}")
         else:
