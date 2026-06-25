@@ -2,7 +2,7 @@
 
 A host-based intrusion detection system for FTP servers. It combines an Isolation Forest ML model with a 5-rule signature engine and a human-in-the-loop (HITL) feedback loop.
 
-Built for vsftpd. Tested on Ubuntu 24.04.
+Tested on Ubuntu 24.04 with vsftpd FTP server.
 
 ## How it works
 
@@ -12,11 +12,7 @@ Built for vsftpd. Tested on Ubuntu 24.04.
 4. The detector (Isolation Forest) scores each session from 0.0 (normal) to 1.0 (anomalous).
 5. The rule engine checks for known attack signatures.
 6. If either the ML score exceeds the threshold or a rule fires, the session is flagged as an alert.
-7. The operator can mark false positives as normal via the dashboard, and retrain the model.
-
-## Features (17)
-
-total_events, failed_logins, downloads, uploads, unique_commands, unique_files, night_events, total_bytes, avg_speed, session_duration, fail_ratio, night_ratio, transfer_ratio, bytes_per_file, garbage_cmd_ratio, abrupt_disconnect, is_auth.
+7. The administrator can mark false positives as normal via the dashboard, and retrain the model.
 
 ## Rule engine (5 rules)
 
@@ -151,4 +147,4 @@ python scripts/anonymize.py data/raw/vsftpd.log data/raw/vsftpd_anon.log scripts
 
 ## License
 
-MIT
+MIT 
