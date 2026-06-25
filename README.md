@@ -1,8 +1,8 @@
 # FTPGuard
 
-A host-based intrusion detection system for FTP servers. It combines an Isolation Forest ML model with a 5-rule signature engine and a human-in-the-loop (HITL) feedback loop.
+![FTPGuard web dashboard with alert statistics and session monitoring](banner.jpeg)
 
-Tested on Ubuntu 24.04 with vsftpd FTP server.
+A host-based intrusion detection system for FTP servers. It combines an Isolation Forest ML model with a 5-rule signature engine and a human-in-the-loop (HITL) feedback loop.
 
 ## How it works
 
@@ -15,6 +15,8 @@ Tested on Ubuntu 24.04 with vsftpd FTP server.
 7. The administrator can mark false positives as normal via the dashboard, and retrain the model.
 
 ## Rule engine (5 rules)
+
+Supported rules: 
 
 - VSFTPD_234_BACKDOOR: detects CVE-2011-2523 exploit attempts (USER with `:)` suffix).
 - FTP_BOUNCE_MGLNDD: detects MGLNDD scanner probes.
@@ -62,6 +64,8 @@ tests/
 - vsftpd with `log_ftp_protocol=YES` in `/etc/vsftpd.conf`
 
 ## Setup
+
+Tested on Ubuntu 24.04 with vsftpd 3.0.3.
 
 ```bash
 # clone the repo
