@@ -1,8 +1,8 @@
-# FTPGuard
+# FTPGuard - Intrusion Detection for FTP Servers
 
-![FTPGuard web dashboard with alert statistics and session monitoring](banner.jpeg)
+![FTPGuard web dashboard with alert statistics and session monitoring](banner.jpg)
 
-A host-based intrusion detection system for FTP servers. It combines an Isolation Forest ML model with a 5-rule signature engine and a human-in-the-loop (HITL) feedback loop.
+A host-based intrusion detection system for FTP servers, combines an Isolation Forest ML model with rule based signature engine and a human in the loop (HITL) feedback loop.
 
 ## Dataset
 
