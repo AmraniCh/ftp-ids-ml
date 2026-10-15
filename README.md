@@ -1,6 +1,6 @@
 # FTPGuard - Intrusion Detection for FTP Servers
 
-![FTPGuard web dashboard with alert statistics and session monitoring](banner.jpg)
+![FTPGuard web dashboard with alert statistics and session monitoring](docs/banner.png)
 
 A host-based intrusion detection system for FTP servers, combines an Isolation Forest ML model with rule based signature engine and a human in the loop (HITL) feedback loop.
 
@@ -8,16 +8,6 @@ A host-based intrusion detection system for FTP servers, combines an Isolation F
 
 the dataset `data/samples/dataset.csv` contains 109 sessions with both **metadata** (for inspection) and **ML-ready numeric features**.
 98 normal sessions from production GitHub Actions deployment traffic, 11 anomalous sessions (failed logins, anonymous access).
-
-## How it works
-
-1. The parser reads vsftpd log lines and extracts structured events.
-2. The session builder groups events by client IP into sessions.
-3. The feature extractor computes 17 numeric features per session.
-4. The detector (Isolation Forest) scores each session from 0.0 (normal) to 1.0 (anomalous).
-5. The rule engine checks for known attack signatures.
-6. If either the ML score exceeds the threshold or a rule fires, the session is flagged as an alert.
-7. The administrator can mark false positives as normal via the dashboard, and retrain the model.
 
 ## Rule engine (5 rules)
 
