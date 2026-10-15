@@ -1,5 +1,6 @@
 import subprocess
 
+
 def retrain_model():
     result = subprocess.run(
         ["ftp-ids", "retrain"],
@@ -10,4 +11,3 @@ def retrain_model():
         return {"status": "ok", "output": result.stdout}
     else:
         return {"status": "error", "message": result.stderr or result.stdout}
-        

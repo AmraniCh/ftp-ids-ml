@@ -1,5 +1,6 @@
-from ftp_ids.core.storage import Storage
 import ftp_ids.config as config
+from ftp_ids.core.storage import Storage
+
 
 def list_alerts(page=1, per_page=12):
     storage = Storage()
@@ -22,7 +23,7 @@ def list_alerts(page=1, per_page=12):
     total = len(result)
     start = (page - 1) * per_page
     end = start + per_page
-    
+
     return {
         "items": result[start:end],
         "page": page,
@@ -41,7 +42,6 @@ def get_alert(src_ip, start_time):
         if row["src_ip"] == src_ip and str(row["start_time"]) == start_time:
             alert = row.to_dict()
 
-            # check labeled state
             alert["labeled"] = False
             if not pool.empty:
                 for _, p_row in pool.iterrows():
@@ -56,10 +56,7 @@ def get_alert(src_ip, start_time):
 def mark_alert_normal(src_ip, start_time):
     storage = Storage()
     alerts = storage.load_alerts()
-    match = alerts[
-        (alerts["src_ip"] == src_ip)
-        & (alerts["start_time"].astype(str) == start_time)
-    ]
+    match = alerts[(alerts["src_ip"] == src_ip) & (alerts["start_time"].astype(str) == start_time)]
     if not match.empty:
         storage.add_to_clean_pool(match)
 
@@ -67,8 +64,5 @@ def mark_alert_normal(src_ip, start_time):
 def unmark_alert_normal(src_ip, start_time):
     storage = Storage()
     pool = storage.load_clean_pool()
-    keep = pool[
-        ~((pool["src_ip"] == src_ip)
-        & (pool["start_time"].astype(str) == start_time))
-    ]
+    keep = pool[~((pool["src_ip"] == src_ip) & (pool["start_time"].astype(str) == start_time))]
     keep.to_csv(config.CLEAN_POOL_PATH, index=False)

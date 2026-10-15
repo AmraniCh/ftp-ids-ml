@@ -1,48 +1,64 @@
+import csv
+from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+
 from ftp_ids import config
 from ftp_ids.core.feature_extractor import FEATURE_NAMES
-from pathlib import Path
-import csv
-import pandas as pd
-from datetime import datetime
+
 
 class Storage:
-
     def append_alert(self, session, score, features, rule_alerts=[]):
         row = {
-            "src_ip":     session["src_ip"],
-            "user":       session["user"] or "",
+            "src_ip": session["src_ip"],
+            "user": session["user"] or "",
             "start_time": session["start_time"].isoformat(),
-            "end_time":   session["end_time"].isoformat(),
-            "n_events":   session["n_events"],
-            "end_type":   session["end_type"],
-            "score":      round(score, 4),
-            "rules":      ",".join(r['rule_id'] for r in rule_alerts),
+            "end_time": session["end_time"].isoformat(),
+            "n_events": session["n_events"],
+            "end_type": session["end_type"],
+            "score": round(score, 4),
+            "rules": ",".join(r["rule_id"] for r in rule_alerts),
             **features,
         }
 
         fieldnames = [
-            "src_ip", "user", "start_time", "end_time", "n_events", "end_type", "score", "rules",
-            *FEATURE_NAMES
+            "src_ip",
+            "user",
+            "start_time",
+            "end_time",
+            "n_events",
+            "end_type",
+            "score",
+            "rules",
+            *FEATURE_NAMES,
         ]
 
         self._append_row(config.ALERTS_PATH, row, fieldnames)
 
     def append_session(self, session, score, features, rule_alerts=[]):
         row = {
-            "src_ip":     session["src_ip"],
-            "user":       session["user"] or "",
+            "src_ip": session["src_ip"],
+            "user": session["user"] or "",
             "start_time": session["start_time"].isoformat(),
-            "end_time":   session["end_time"].isoformat(),
-            "n_events":   session["n_events"],
-            "end_type":   session["end_type"],
-            "score":      round(score, 4),
-            "rules":      ",".join(r['rule_id'] for r in rule_alerts),
+            "end_time": session["end_time"].isoformat(),
+            "n_events": session["n_events"],
+            "end_type": session["end_type"],
+            "score": round(score, 4),
+            "rules": ",".join(r["rule_id"] for r in rule_alerts),
             **features,
         }
 
         fieldnames = [
-            "src_ip", "user", "start_time", "end_time", "n_events", "end_type", "score", "rules",
-            *FEATURE_NAMES
+            "src_ip",
+            "user",
+            "start_time",
+            "end_time",
+            "n_events",
+            "end_type",
+            "score",
+            "rules",
+            *FEATURE_NAMES,
         ]
 
         self._append_row(config.SESSIONS_PATH, row, fieldnames)
@@ -50,7 +66,6 @@ class Storage:
     def clear_sessions(self):
         if Path(config.SESSIONS_PATH).exists():
             Path(config.SESSIONS_PATH).unlink()
-
 
     def load_alerts(self):
         if not Path(config.ALERTS_PATH).exists():
@@ -69,16 +84,14 @@ class Storage:
         if Path(config.CLEAN_POOL_PATH).exists():
             pool = pd.read_csv(config.CLEAN_POOL_PATH)
             new_keys = set(zip(rows["src_ip"], rows["start_time"]))
-            pool = pool[~pool.apply(
-                lambda r: (r["src_ip"], r["start_time"]) in new_keys, axis=1
-            )]
+            pool = pool[~pool.apply(lambda r: (r["src_ip"], r["start_time"]) in new_keys, axis=1)]
             pool = pd.concat([pool, rows], ignore_index=True)
         else:
             pool = rows
 
         pool.to_csv(config.CLEAN_POOL_PATH, index=False)
         return len(pool)
-    
+
     def load_clean_pool(self):
         if not Path(config.CLEAN_POOL_PATH).exists():
             return pd.DataFrame(columns=["src_ip", "start_time", *FEATURE_NAMES])

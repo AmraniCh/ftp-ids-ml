@@ -10,7 +10,6 @@ import sys
 
 
 def load_replacements(config_path):
-    """Read replacement pairs from a config file."""
     pairs = []
 
     with open(config_path, "r") as f:
@@ -28,14 +27,12 @@ def load_replacements(config_path):
 
 
 def anonymize_line(line, replacements):
-    """Replace all identifiers in a single log line."""
     for original, replacement in replacements:
         line = line.replace(original, replacement)
     return line
 
 
 def anonymize_file(input_path, output_path, config_path):
-    """Read a log, anonymize every line, write the result."""
     replacements = load_replacements(config_path)
     count = 0
 

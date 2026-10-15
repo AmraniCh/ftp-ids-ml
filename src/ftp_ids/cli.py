@@ -1,18 +1,21 @@
 import argparse
-from ftp_ids import config
-from ftp_ids.parsers.vsftpd_parser import VsftpdParser
-from pprint import pprint
-from ftp_ids.core.session_builder import build_sessions
-from ftp_ids.core.feature_extractor import FeatureExtractor, FEATURE_NAMES
-from ftp_ids.core.detector import Detector
-from ftp_ids.config import MODEL_PATH, CONTAMINATION
-import pandas as pd
-import time
-from ftp_ids.core.storage import Storage
-from ftp_ids.core.rule_engine import RuleEngine
-from ftp_ids.dashboard.app import serve
 import csv
 import io
+import time
+from pprint import pprint
+
+import pandas as pd
+
+from ftp_ids import config
+from ftp_ids.config import CONTAMINATION, MODEL_PATH
+from ftp_ids.core.detector import Detector
+from ftp_ids.core.feature_extractor import FEATURE_NAMES, FeatureExtractor
+from ftp_ids.core.rule_engine import RuleEngine
+from ftp_ids.core.session_builder import build_sessions
+from ftp_ids.core.storage import Storage
+from ftp_ids.dashboard.app import serve
+from ftp_ids.parsers.vsftpd_parser import VsftpdParser
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -31,16 +34,16 @@ def main():
     extract_p = subparsers.add_parser("extract", help="Extract features from sessions")
     extract_p.add_argument("--log", default=config.LOGS_PATH)
     extract_p.add_argument("--metadata", action="store_true", help="Include session metadata columns")
-    
+
     train_p = subparsers.add_parser("train", help="Train the model on the spcified FTP logs")
     train_p.add_argument("--log", default=config.LOGS_PATH)
 
     watch_p = subparsers.add_parser("watch", description="Watch the specified log and score session in live")
     watch_p.add_argument("--log", default=config.LOGS_PATH)
-    watch_p.add_argument("--threshold", type=float, default=0.6) 
-    
-    correct_p = subparsers.add_parser("correct", help="Apply admin labels from alerts.csv to the clean pool")
-    
+    watch_p.add_argument("--threshold", type=float, default=0.6)
+
+    subparsers.add_parser("correct", help="Apply admin labels from alerts.csv to the clean pool")
+
     retrain_p = subparsers.add_parser("retrain", help="Rebuild model with original log + clean pool")
     retrain_p.add_argument("--log", default=config.LOGS_PATH)
 
@@ -50,12 +53,11 @@ def main():
 
     args = parser.parse_args()
 
-    
     if args.command == "correct":
         run_correct()
     elif args.command == "dashboard":
         serve(host=args.host, port=args.port)
-    else:    
+    else:
         if args and args.log is None:
             parser.error("No FTP log file found. Specify one with --log.")
 
@@ -78,22 +80,25 @@ def main():
             run_retrain(args.log)
 
 
-
-def run_parse(log_path: str, output=True) :
+def run_parse(log_path: str, output=True):
     p = VsftpdParser()
     events, failed = [], []
-    with open(log_path, "r") as f: # TODO consider errors="replace" ?
+    with open(log_path, "r") as f:  # TODO consider errors="replace" ?
         for line in f:
             event = p.parse_line(line)
-            if event: events.append(event) 
-            else: failed.append(line)
-            if output: pprint(event if event else line)
+            if event:
+                events.append(event)
+            else:
+                failed.append(line)
+            if output:
+                pprint(event if event else line)
 
     if output:
         print(f"parsed : {len(events)}")
         print(f"failed : {len(failed)}")
 
     return events
+
 
 def run_sessions(log_path, show: bool = False):
     events = run_parse(log_path, output=False)
@@ -102,17 +107,19 @@ def run_sessions(log_path, show: bool = False):
     if show:
         pprint(sessions)
         return
-      
+
     print(f"Sessions: {len(sessions)}\n")
     print(f"{'SRC_IP':<16} {'USER':<20} {'END':<8} {'EVENTS':>6}  {'START':<19}  {'END':<19}")
-    
+
     for s in sessions:
-        print(f"{s['src_ip']:<16} {s['user'] or 'N/A':<20} {s['end_type']:<8} "
-              f"{s['n_events']:>6}  {s['start_time']}  {s['end_time']}")
+        print(
+            f"{s['src_ip']:<16} {s['user'] or 'N/A':<20} {s['end_type']:<8} "
+            f"{s['n_events']:>6}  {s['start_time']}  {s['end_time']}"
+        )
 
     return sessions
 
-# features extracting
+
 def run_extract(log_path, show: bool = False, include_metadata: bool = True):
     events = run_parse(log_path, output=False)
     sessions = build_sessions(events)
@@ -125,14 +132,22 @@ def run_extract(log_path, show: bool = False, include_metadata: bool = True):
 
     if show:
         from pprint import pprint
+
         pprint(features)
 
     output = io.StringIO()
 
     if include_metadata:
         fieldnames = [
-            "session_id", "src_ip", "user", "start_time", "end_time",
-            "n_events", "end_type", *FEATURE_NAMES, "label"
+            "session_id",
+            "src_ip",
+            "user",
+            "start_time",
+            "end_time",
+            "n_events",
+            "end_type",
+            *FEATURE_NAMES,
+            "label",
         ]
         writer = csv.DictWriter(output, fieldnames=fieldnames)
         writer.writeheader()
@@ -147,7 +162,7 @@ def run_extract(log_path, show: bool = False, include_metadata: bool = True):
                 "n_events": session["n_events"],
                 "end_type": session["end_type"],
                 **feat,
-                "label": '',
+                "label": "",
             }
             writer.writerow(row)
     else:
@@ -158,32 +173,31 @@ def run_extract(log_path, show: bool = False, include_metadata: bool = True):
     print(output.getvalue())
 
 
-
 def run_train(log_path):
     events = run_parse(log_path, output=False)
     sessions = build_sessions(events)
-    
+
     fe = FeatureExtractor()
     features = fe.extract_batch(sessions)
 
     df = pd.DataFrame(features)
     print(df)
-    
+
     dt = Detector(model_path=MODEL_PATH, contamination=CONTAMINATION)
     dt.train(sessions)
-    
+
     storage = Storage()
     storage.clear_alerts()
     storage.clear_sessions()
-    # storage.clear_clean_pool()
+    # the clean pool is kept on purpose, it holds the admin labels used by retrain
     # TODO threshold is hardcoded here
 
-    for i,s in enumerate(sessions):
+    for i, s in enumerate(sessions):
         flags = []
         rule_engine = RuleEngine(s)
         all_rules = rule_engine.check()
-        rules_matched = [r for r in all_rules if r['matched']]
-                
+        rules_matched = [r for r in all_rules if r["matched"]]
+
         score = dt.score(s)
         features = dt.extractor.extract(s)
 
@@ -202,7 +216,7 @@ def run_train(log_path):
 def run_watch(log_path: str, threshold: float):
     def tail(path):
         with open(path, "r") as f:
-            f.seek(0, 2) 
+            f.seek(0, 2)
             while True:
                 line = f.readline()
                 if not line:
@@ -219,7 +233,7 @@ def run_watch(log_path: str, threshold: float):
 
     print(f"watching {log_path}, threshold={threshold}")
 
-    buffer = []  
+    buffer = []
     seen_session_keys = set()
 
     for line in tail(log_path):
@@ -240,8 +254,8 @@ def run_watch(log_path: str, threshold: float):
 
             rule_engine = RuleEngine(session)
             all_rules = rule_engine.check()
-            rules_matched = [r for r in all_rules if r['matched']]
-                
+            rules_matched = [r for r in all_rules if r["matched"]]
+
             score = detector.score(session)
             seen_session_keys.add(key)
 
@@ -249,16 +263,16 @@ def run_watch(log_path: str, threshold: float):
             if score >= threshold or rules_matched:
                 features = detector.extractor.extract(session)
                 storage.append_alert(session, score, features, rules_matched)
-                    
+
                 if score >= threshold:
                     flags.append(f"ML ({score:.2f})")
-                
+
                 flags.extend(f"RE ({r['rule_id']})" for r in rules_matched)
-                
+
                 print(f"ALERT  {session['src_ip']:<16} user={session['user'] or '-':<20} {', '.join(flags)}")
             else:
                 print(f"ok     {session['src_ip']:<16} user={session['user'] or '-':<20} {score:.2f}")
-    
+
 
 def run_correct():
     storage = Storage()
@@ -275,12 +289,12 @@ def run_correct():
     valid = {"normal", "attack"}
     invalid = df[~df["label"].isin(valid)]
     if not invalid.empty:
-        print(f"Invalid labels, must be 'normal' or 'attack'")
+        print("Invalid labels, must be 'normal' or 'attack'")
         print(invalid[["src_ip", "start_time", "label"]])
         return
 
     false_positives = df[df["label"] == "normal"]
-    confirmed       = df[df["label"] == "attack"]
+    confirmed = df[df["label"] == "attack"]
 
     print(f"False positives (-> clean pool): {len(false_positives)}")
     print(f"Confirmed attacks:               {len(confirmed)}")
@@ -291,7 +305,8 @@ def run_correct():
 
     new_size = storage.add_to_clean_pool(false_positives)
     print(f"Clean pool now has {new_size} session(s).")
-    print(f"Run: ftp-ids retrain")
+    print("Run: ftp-ids retrain")
+
 
 def run_retrain(log_path: str):
     storage = Storage()
@@ -302,14 +317,15 @@ def run_retrain(log_path: str):
 
     clean_pool = storage.load_clean_pool()
 
-    # combine
     if len(clean_pool) > 0:
-        combined = pd.concat([
-            original_features[FEATURE_NAMES],
-            clean_pool[FEATURE_NAMES],
-        ], ignore_index=True)
-        print(f"Training on {len(original_features)} log sessions "
-            f"+ {len(clean_pool)} confirmed-normal from clean pool")
+        combined = pd.concat(
+            [
+                original_features[FEATURE_NAMES],
+                clean_pool[FEATURE_NAMES],
+            ],
+            ignore_index=True,
+        )
+        print(f"Training on {len(original_features)} log sessions + {len(clean_pool)} confirmed-normal from clean pool")
     else:
         combined = original_features[FEATURE_NAMES]
         print(f"No clean pool yet, training on {len(combined)} sessions")
@@ -317,6 +333,5 @@ def run_retrain(log_path: str):
     detector.train_on_features(combined)
 
 
-    
 if __name__ == "__main__":
     main()

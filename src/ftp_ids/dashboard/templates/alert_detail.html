@@ -1,100 +1,101 @@
 {% extends "base.html" %}
 {% block title %}Alert - FTPGuard{% endblock %}
-
 {% block content %}
-
-<div class="mb-6 flex items-center justify-between">
-    <a href="{{ url_for('alerts') }}" class="text-sm text-blue-600 hover:underline">Back to alerts</a>
-
-    {% if alert.labeled %}
-    <span class="text-sm text-green-700">Marked as normal</span>
-    {% else %}
-    <form action="{{ url_for('mark_normal') }}" method="post">
-        <input type="hidden" name="src_ip" value="{{ alert.src_ip }}">
-        <input type="hidden" name="start_time" value="{{ alert.start_time }}">
-        <button type="submit"
-            class="px-3 py-1.5 text-sm rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100">
-            Mark as normal
-        </button>
-    </form>
-    {% endif %}
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div class="rounded-md border border-neutral-200 bg-white p-5">
-        <div class="text-sm text-neutral-500">Source IP</div>
-        <div class="text-xl font-mono mt-1">{{ alert.src_ip }}</div>
+    <div class="mb-6 flex items-center justify-between">
+        <a href="{{ url_for('alerts') }}"
+           class="text-sm text-blue-600 hover:underline">Back to alerts</a>
+        {% if alert.labeled %}
+            <span class="text-sm text-green-700">Marked as normal</span>
+        {% else %}
+            <form action="{{ url_for('mark_normal') }}" method="post">
+                <input type="hidden" name="src_ip" value="{{ alert.src_ip }}">
+                <input type="hidden" name="start_time" value="{{ alert.start_time }}">
+                <button type="submit"
+                        class="px-3 py-1.5 text-sm rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100">
+                    Mark as normal
+                </button>
+            </form>
+        {% endif %}
     </div>
-    <div class="rounded-md border border-neutral-200 bg-white p-5">
-        <div class="text-sm text-neutral-500">User</div>
-        <div class="text-xl mt-1">{{ alert.user or '-' }}</div>
-    </div>
-    <div class="rounded-md border border-neutral-200 bg-white p-5">
-        <div class="text-sm text-neutral-500">Score</div>
-        <div class="text-xl mt-1 tabular-nums font-semibold
-            {% if alert.score >= 0.6 %}text-red-700
-            {% elif alert.score >= 0.4 %}text-amber-600{% endif %}">
-            {{ "%.2f"|format(alert.score) }}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="rounded-md border border-neutral-200 bg-white p-5">
+            <div class="text-sm text-neutral-500">Source IP</div>
+            <div class="text-xl font-mono mt-1">{{ alert.src_ip }}</div>
+        </div>
+        <div class="rounded-md border border-neutral-200 bg-white p-5">
+            <div class="text-sm text-neutral-500">User</div>
+            <div class="text-xl mt-1">{{ alert.user or '-' }}</div>
+        </div>
+        <div class="rounded-md border border-neutral-200 bg-white p-5">
+            <div class="text-sm text-neutral-500">Score</div>
+            <div class="text-xl mt-1 tabular-nums font-semibold {% if alert.score >= 0.6 %}text-red-700 {% elif alert.score >= 0.4 %}text-amber-600{% endif %}">
+                {{ "%.2f"|format(alert.score) }}
+            </div>
         </div>
     </div>
-</div>
-
-<section class="rounded-md border border-neutral-200 bg-white p-6 mb-6">
-    <h2 class="font-semibold mb-4">Session</h2>
-    <dl class="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8 text-sm">
-        <div class="flex justify-between border-b border-neutral-100 pb-1">
-            <dt class="text-neutral-500">Start</dt>
-            <dd>{{ alert.start_time | ts }}</dd>
+    <section class="rounded-md border border-neutral-200 bg-white p-6 mb-6">
+        <h2 class="font-semibold mb-4">Session</h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8 text-sm">
+            <div class="flex justify-between border-b border-neutral-100 pb-1">
+                <dt class="text-neutral-500">Start</dt>
+                <dd>
+                    {{ alert.start_time | ts }}
+                </dd>
+            </div>
+            <div class="flex justify-between border-b border-neutral-100 pb-1">
+                <dt class="text-neutral-500">End</dt>
+                <dd>
+                    {{ alert.end_time | ts }}
+                </dd>
+            </div>
+            <div class="flex justify-between border-b border-neutral-100 pb-1">
+                <dt class="text-neutral-500">Events</dt>
+                <dd class="tabular-nums">
+                    {{ alert.n_events }}
+                </dd>
+            </div>
+            <div class="flex justify-between border-b border-neutral-100 pb-1">
+                <dt class="text-neutral-500">End type</dt>
+                <dd>
+                    {{ alert.end_type }}
+                </dd>
+            </div>
+            <div class="flex justify-between md:col-span-2 border-b border-neutral-100 pb-1">
+                <dt class="text-neutral-500">Rules fired</dt>
+                <dd>
+                    {{ alert.rules or '-' }}
+                </dd>
+            </div>
+        </dl>
+    </section>
+    {% set features = [
+        ("Total events", alert.total_events),
+        ("Failed logins", alert.failed_logins),
+        ("Downloads", alert.downloads),
+        ("Uploads", alert.uploads),
+        ("Unique commands", alert.unique_commands),
+        ("Unique files", alert.unique_files),
+        ("Night events", alert.night_events),
+        ("Total bytes", alert.total_bytes),
+        ("Avg speed", "%.1f"|format(alert.avg_speed)),
+        ("Duration (s)", alert.session_duration),
+        ("Fail ratio", "%.2f"|format(alert.fail_ratio)),
+        ("Night ratio", "%.2f"|format(alert.night_ratio)),
+        ("Transfer ratio", "%.2f"|format(alert.transfer_ratio)),
+        ("Bytes per file", alert.bytes_per_file),
+        ("Garbage ratio", "%.2f"|format(alert.garbage_cmd_ratio)),
+        ("Abrupt end", alert.abrupt_disconnect),
+        ("Authenticated", alert.is_auth),
+    ] %}
+    <section class="rounded-md border border-neutral-200 bg-white p-6">
+        <h2 class="font-semibold mb-4">Features</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
+            {% for name, value in features %}
+                <div class="flex justify-between border-b border-neutral-100 pb-1">
+                    <span class="text-neutral-500">{{ name }}</span>
+                    <span class="tabular-nums">{{ value }}</span>
+                </div>
+            {% endfor %}
         </div>
-        <div class="flex justify-between border-b border-neutral-100 pb-1">
-            <dt class="text-neutral-500">End</dt>
-            <dd>{{ alert.end_time | ts }}</dd>
-        </div>
-        <div class="flex justify-between border-b border-neutral-100 pb-1">
-            <dt class="text-neutral-500">Events</dt>
-            <dd class="tabular-nums">{{ alert.n_events }}</dd>
-        </div>
-        <div class="flex justify-between border-b border-neutral-100 pb-1">
-            <dt class="text-neutral-500">End type</dt>
-            <dd>{{ alert.end_type }}</dd>
-        </div>
-        <div class="flex justify-between md:col-span-2 border-b border-neutral-100 pb-1">
-            <dt class="text-neutral-500">Rules fired</dt>
-            <dd>{{ alert.rules or '-' }}</dd>
-        </div>
-    </dl>
-</section>
-
-{% set features = [
-    ("Total events", alert.total_events),
-    ("Failed logins", alert.failed_logins),
-    ("Downloads", alert.downloads),
-    ("Uploads", alert.uploads),
-    ("Unique commands", alert.unique_commands),
-    ("Unique files", alert.unique_files),
-    ("Night events", alert.night_events),
-    ("Total bytes", alert.total_bytes),
-    ("Avg speed", "%.1f"|format(alert.avg_speed)),
-    ("Duration (s)", alert.session_duration),
-    ("Fail ratio", "%.2f"|format(alert.fail_ratio)),
-    ("Night ratio", "%.2f"|format(alert.night_ratio)),
-    ("Transfer ratio", "%.2f"|format(alert.transfer_ratio)),
-    ("Bytes per file", alert.bytes_per_file),
-    ("Garbage ratio", "%.2f"|format(alert.garbage_cmd_ratio)),
-    ("Abrupt end", alert.abrupt_disconnect),
-    ("Authenticated", alert.is_auth),
-] %}
-
-<section class="rounded-md border border-neutral-200 bg-white p-6">
-    <h2 class="font-semibold mb-4">Features</h2>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
-        {% for name, value in features %}
-        <div class="flex justify-between border-b border-neutral-100 pb-1">
-            <span class="text-neutral-500">{{ name }}</span>
-            <span class="tabular-nums">{{ value }}</span>
-        </div>
-        {% endfor %}
-    </div>
-</section>
-
+    </section>
 {% endblock %}

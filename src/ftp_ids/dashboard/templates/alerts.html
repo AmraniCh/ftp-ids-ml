@@ -1,115 +1,110 @@
 {% extends "base.html" %}
 {% block title %}Alerts - FTPGuard{% endblock %}
-
 {% block content %}
-<div class="flex items-center justify-between mb-6">
-    <div>
-        <h1 class="text-xl font-semibold">Alerts</h1>
-        <p class="text-sm text-neutral-500 mt-1">{{ total }} total, page {{ page }} of {{ pages }}</p>
-    </div>
-
-    <form action="{{ url_for('retrain') }}" method="post" onsubmit="
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-xl font-semibold">Alerts</h1>
+            <p class="text-sm text-neutral-500 mt-1">{{ total }} total, page {{ page }} of {{ pages }}</p>
+        </div>
+        <form action="{{ url_for('retrain') }}"
+              method="post"
+              onsubmit="
         const b = this.querySelector('button');
         b.textContent = 'Applying...';
         b.disabled = true;
         b.classList.add('opacity-50', 'cursor-not-allowed');
       ">
-        <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">
-            Apply
-        </button>
-    </form>
-</div>
-
-{% if items %}
-<div class="rounded-md border border-neutral-200 bg-white overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="text-neutral-500 bg-neutral-50">
-            <tr class="border-b border-neutral-200">
-                <th class="text-left px-4 py-3 font-medium">Start</th>
-                <th class="text-left px-4 py-3 font-medium">Source IP</th>
-                <th class="text-left px-4 py-3 font-medium">User</th>
-                <th class="text-right px-4 py-3 font-medium">Events</th>
-                <th class="text-right px-4 py-3 font-medium">Score</th>
-                <th class="text-left px-4 py-3 font-medium">Rules</th>
-                <th class="text-left px-4 py-3 font-medium">Status</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-neutral-100">
-            {% for a in items %}
-            <tr class="hover:bg-neutral-50 cursor-pointer {% if a.labeled %}text-neutral-400{% endif %}"
-                onclick="window.location='{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}'">
-
-                <td class="px-4 py-2.5 text-neutral-500 whitespace-nowrap">{{ a.start_time | ts }}</td>
-                <td class="px-4 py-2.5 font-mono">{{ a.src_ip }}</td>
-                <td class="px-4 py-2.5">{{ a.user or '-' }}</td>
-                <td class="px-4 py-2.5 text-right tabular-nums">{{ a.n_events }}</td>
-                <td class="px-4 py-2.5 text-right tabular-nums font-medium
-                    {% if a.score >= 0.6 %}text-red-700
-                    {% elif a.score >= 0.4 %}text-amber-600{% endif %}">
-                    {{ "%.2f"|format(a.score) }}
-                </td>
-                <td class="px-4 py-2.5 text-neutral-600">{{ a.rules or '' }}</td>
-
-                <td class="px-4 py-2.5">
-                    {% if a.labeled %}
-                    <span class="px-2 py-0.5 text-xs rounded-full bg-green-50 text-green-700">normal</span>
-                    {% else %}
-                    <span class="px-2 py-0.5 text-xs rounded-full bg-red-50 text-red-700">attack</span>
-                    {% endif %}
-                </td>
-                <td class="px-4 py-2.5 whitespace-nowrap" onclick="event.stopPropagation()">
-                    <a href="{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}"
-                        class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-                        View
-                    </a>
-                    {% if a.labeled %}
-                    <form action="{{ url_for('unmark') }}" method="post" class="inline ml-1">
-                        <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
-                        <input type="hidden" name="start_time" value="{{ a.start_time }}">
-                        <button type="submit"
-                            class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-                            Mark attack
-                        </button>
-                    </form>
-                    {% else %}
-                    <form action="{{ url_for('mark_normal') }}" method="post" class="inline ml-1">
-                        <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
-                        <input type="hidden" name="start_time" value="{{ a.start_time }}">
-                        <button type="submit"
-                            class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-                            Mark normal
-                        </button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-{% if pages > 1 %}
-<div class="mt-4 flex gap-2 text-sm justify-center items-center">
-    {% if page > 1 %}
-    <a href="?page={{ page - 1 }}" class="px-3 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-100">Previous</a>
+            <button type="submit"
+                    class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">Apply</button>
+        </form>
+    </div>
+    {% if items %}
+        <div class="rounded-md border border-neutral-200 bg-white overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="text-neutral-500 bg-neutral-50">
+                    <tr class="border-b border-neutral-200">
+                        <th class="text-left px-4 py-3 font-medium">Start</th>
+                        <th class="text-left px-4 py-3 font-medium">Source IP</th>
+                        <th class="text-left px-4 py-3 font-medium">User</th>
+                        <th class="text-right px-4 py-3 font-medium">Events</th>
+                        <th class="text-right px-4 py-3 font-medium">Score</th>
+                        <th class="text-left px-4 py-3 font-medium">Rules</th>
+                        <th class="text-left px-4 py-3 font-medium">Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                    {% for a in items %}
+                        <tr class="hover:bg-neutral-50 cursor-pointer {% if a.labeled %}text-neutral-400{% endif %}"
+                            onclick="window.location='{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}'">
+                            <td class="px-4 py-2.5 text-neutral-500 whitespace-nowrap">{{ a.start_time | ts }}</td>
+                            <td class="px-4 py-2.5 font-mono">{{ a.src_ip }}</td>
+                            <td class="px-4 py-2.5">{{ a.user or '-' }}</td>
+                            <td class="px-4 py-2.5 text-right tabular-nums">{{ a.n_events }}</td>
+                            <td class="px-4 py-2.5 text-right tabular-nums font-medium {% if a.score >= 0.6 %}text-red-700 {% elif a.score >= 0.4 %}text-amber-600{% endif %}">
+                                {{ "%.2f"|format(a.score) }}
+                            </td>
+                            <td class="px-4 py-2.5 text-neutral-600">{{ a.rules or '' }}</td>
+                            <td class="px-4 py-2.5">
+                                {% if a.labeled %}
+                                    <span class="px-2 py-0.5 text-xs rounded-full bg-green-50 text-green-700">normal</span>
+                                {% else %}
+                                    <span class="px-2 py-0.5 text-xs rounded-full bg-red-50 text-red-700">attack</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-2.5 whitespace-nowrap"
+                                onclick="event.stopPropagation()">
+                                <a href="{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}"
+                                   class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+                                    View
+                                </a>
+                                {% if a.labeled %}
+                                    <form action="{{ url_for('unmark') }}" method="post" class="inline ml-1">
+                                        <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
+                                        <input type="hidden" name="start_time" value="{{ a.start_time }}">
+                                        <button type="submit"
+                                                class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+                                            Mark attack
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ url_for('mark_normal') }}"
+                                          method="post"
+                                          class="inline ml-1">
+                                        <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
+                                        <input type="hidden" name="start_time" value="{{ a.start_time }}">
+                                        <button type="submit"
+                                                class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+                                            Mark normal
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if pages > 1 %}
+            <div class="mt-4 flex gap-2 text-sm justify-center items-center">
+                {% if page > 1 %}
+                    <a href="?page={{ page - 1 }}"
+                       class="px-3 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-100">Previous</a>
+                {% else %}
+                    <span class="px-3 py-1 rounded border border-neutral-200 text-neutral-300">Previous</span>
+                {% endif %}
+                <span class="px-3 text-neutral-500 tabular-nums">{{ page }} of {{ pages }}</span>
+                {% if page < pages %}
+                    <a href="?page={{ page + 1 }}"
+                       class="px-3 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-100">Next</a>
+                {% else %}
+                    <span class="px-3 py-1 rounded border border-neutral-200 text-neutral-300">Next</span>
+                {% endif %}
+            </div>
+        {% endif %}
     {% else %}
-    <span class="px-3 py-1 rounded border border-neutral-200 text-neutral-300">Previous</span>
+        <div class="rounded-md border border-neutral-200 bg-white p-12 text-center text-neutral-500 text-sm">
+            No alerts yet, run <code class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-800">ftp-ids watch</code> to start detecting
+        </div>
     {% endif %}
-
-    <span class="px-3 text-neutral-500 tabular-nums">{{ page }} of {{ pages }}</span>
-
-    {% if page < pages %}
-    <a href="?page={{ page + 1 }}" class="px-3 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-100">Next</a>
-    {% else %}
-    <span class="px-3 py-1 rounded border border-neutral-200 text-neutral-300">Next</span>
-    {% endif %}
-</div>
-{% endif %}
-
-{% else %}
-<div class="rounded-md border border-neutral-200 bg-white p-12 text-center text-neutral-500 text-sm">
-    No alerts yet, run <code class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-800">ftp-ids watch</code> to start detecting
-</div>
-{% endif %}
 {% endblock %}

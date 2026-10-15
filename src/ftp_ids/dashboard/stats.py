@@ -1,7 +1,9 @@
-from ftp_ids.core.storage import Storage
-from datetime import date
-import ftp_ids.config as config
 import subprocess
+from datetime import date
+
+import ftp_ids.config as config
+from ftp_ids.core.storage import Storage
+
 
 def compute_stats():
     storage = Storage()
@@ -10,10 +12,10 @@ def compute_stats():
     alerts_today = 0
     unique_ips_today = set()
 
-    for _,row in alerts.iterrows():
-        if row['start_time'].startswith(today):
+    for _, row in alerts.iterrows():
+        if row["start_time"].startswith(today):
             alerts_today += 1
-            unique_ips_today.add(row['src_ip'])
+            unique_ips_today.add(row["src_ip"])
 
     clean_pool = storage.load_clean_pool()
 
@@ -39,13 +41,15 @@ def alerts_per_hour():
 
     return buckets
 
+
 def is_watch_running() -> bool:
     try:
         result = subprocess.run(["pgrep", "-f", "ftp-ids watch"], capture_output=True, text=True)
         return result.returncode == 0
     except FileNotFoundError:
         return False
-    
+
+
 def _count_events_today():
     # TODO raise error if the logs file not exist
     today_prefix = date.today().strftime("%a %b %e")

@@ -1,13 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>{% block title %}FTPGuard{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}FTPGuard{% endblock %}</title>
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
         // San Francisco on Mac, Inter everywhere else
         tailwind.config = {
             theme: {
@@ -17,9 +18,9 @@
                 },
             },
         };
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <style>
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+        <style>
         .toastify {
             background: #fff !important;
             color: #262626 !important;
@@ -34,89 +35,66 @@
             color: #737373 !important;
             opacity: 1 !important;
         }
-    </style>
-</head>
-
-<body class="bg-neutral-50 text-neutral-800 min-h-screen font-sans">
-    <header class="bg-white border-b border-neutral-200">
-        <div class="max-w-6xl mx-auto px-6 flex items-stretch gap-8 h-14">
-            <a href="/" class="flex items-center font-semibold text-lg">FTPGuard</a>
-
-            <nav class="flex gap-1 text-sm">
-                <a href="/" class="flex items-center px-3 -mb-px border-b-2
-                    {% if request.endpoint == 'index' %}
-                        border-blue-600 text-neutral-900
+        </style>
+    </head>
+    <body class="bg-neutral-50 text-neutral-800 min-h-screen font-sans">
+        <header class="bg-white border-b border-neutral-200">
+            <div class="max-w-6xl mx-auto px-6 flex items-stretch gap-8 h-14">
+                <a href="{{ url_for('index') }}"
+                   class="flex items-center font-semibold text-lg">FTPGuard</a>
+                <nav class="flex gap-1 text-sm">
+                    <a href="{{ url_for('index') }}"
+                       class="flex items-center px-3 -mb-px border-b-2 {% if request.endpoint == 'index' %} border-blue-600 text-neutral-900 {% else %} border-transparent text-neutral-500 hover:text-neutral-800 {% endif %}">
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('alerts') }}"
+                       class="flex items-center px-3 -mb-px border-b-2 {% if request.endpoint == 'alerts' or request.endpoint == 'alert_detail' %} border-blue-600 text-neutral-900 {% else %} border-transparent text-neutral-500 hover:text-neutral-800 {% endif %}">
+                        Alerts
+                    </a>
+                    <a href="{{ url_for('live') }}"
+                       class="flex items-center px-3 -mb-px border-b-2 {% if request.endpoint == 'live' %} border-blue-600 text-neutral-900 {% else %} border-transparent text-neutral-500 hover:text-neutral-800 {% endif %}">
+                        Live
+                    </a>
+                </nav>
+                <div class="ml-auto flex items-center text-sm">
+                    {% if is_watching %}
+                        <span class="inline-flex items-center gap-2 text-green-700">
+                            <span class="w-2 h-2 rounded-full bg-green-600"></span>
+                            Watching
+                        </span>
                     {% else %}
-                        border-transparent text-neutral-500 hover:text-neutral-800
-                    {% endif %}">
-                    Dashboard
-                </a>
-                <a href="/alerts" class="flex items-center px-3 -mb-px border-b-2
-                    {% if request.endpoint == 'alerts' or request.endpoint == 'alert_detail' %}
-                        border-blue-600 text-neutral-900
-                    {% else %}
-                        border-transparent text-neutral-500 hover:text-neutral-800
-                    {% endif %}">
-                    Alerts
-                </a>
-                <a href="/live" class="flex items-center px-3 -mb-px border-b-2
-                    {% if request.endpoint == 'live' %}
-                        border-blue-600 text-neutral-900
-                    {% else %}
-                        border-transparent text-neutral-500 hover:text-neutral-800
-                    {% endif %}">
-                    Live
-                </a>
-            </nav>
-
-            <div class="ml-auto flex items-center text-sm">
-                {% if is_watching %}
-                <span class="inline-flex items-center gap-2 text-green-700">
-                    <span class="w-2 h-2 rounded-full bg-green-600"></span>
-                    Watching
-                </span>
-                {% else %}
-                <span class="inline-flex items-center gap-2 text-neutral-500">
-                    <span class="w-2 h-2 rounded-full bg-neutral-400"></span>
-                    Idle
-                </span>
-                {% endif %}
+                        <span class="inline-flex items-center gap-2 text-neutral-500">
+                            <span class="w-2 h-2 rounded-full bg-neutral-400"></span>
+                            Idle
+                        </span>
+                    {% endif %}
+                </div>
             </div>
-        </div>
-    </header>
-
-    <main class="max-w-6xl mx-auto px-6 py-8">
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-        <div class="mb-4 rounded-md border px-4 py-3 text-sm
-            {% if category == 'success' %}border-green-200 bg-green-50 text-green-800
-            {% else %}border-red-200 bg-red-50 text-red-800{% endif %}">
-
-            {% set lines = message.strip().split('\n') %}
-            {% if lines | length > 1 %}
-            <details>
-                <summary class="cursor-pointer flex items-center justify-between list-none">
-                    <span>{{ lines[-1] }}</span>
-                    <span class="text-xs text-neutral-500 hover:text-neutral-800">Show details</span>
-                </summary>
-                <pre class="mt-3 p-3 rounded bg-white text-neutral-600 whitespace-pre-wrap text-xs overflow-x-auto">{{ message }}</pre>
-            </details>
-            {% else %}
-            {{ message }}
-            {% endif %}
-        </div>
-        {% endfor %}
-        {% endwith %}
-
-
-        {% block content %}{% endblock %}
-    </main>
-
-    {% block scripts %}{% endblock %}
-
-    {% if is_watching %}
-    <script>
+        </header>
+        <main class="max-w-6xl mx-auto px-6 py-8">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="mb-4 rounded-md border px-4 py-3 text-sm {% if category == 'success' %}border-green-200 bg-green-50 text-green-800 {% else %}border-red-200 bg-red-50 text-red-800{% endif %}">
+                        {% set lines = message.strip().split('\n') %}
+                        {% if lines | length > 1 %}
+                            <details>
+                                <summary class="cursor-pointer flex items-center justify-between list-none">
+                                    <span>{{ lines[-1] }}</span>
+                                    <span class="text-xs text-neutral-500 hover:text-neutral-800">Show details</span>
+                                </summary>
+                                <pre class="mt-3 p-3 rounded bg-white text-neutral-600 whitespace-pre-wrap text-xs overflow-x-auto">{{ message }}</pre>
+                            </details>
+                        {% else %}
+                            {{ message }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+        {% block scripts %}{% endblock %}
+        {% if is_watching %}
+            <script>
         (function () {
             const since = new Date().toISOString().slice(0, 19).replace("T", " ");
 
@@ -157,8 +135,7 @@
             poll();
             setInterval(poll, 2000);
         })();
-    </script>
-    {% endif %}
-</body>
-
+            </script>
+        {% endif %}
+    </body>
 </html>
