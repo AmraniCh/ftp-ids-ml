@@ -1,88 +1,84 @@
 {% extends "base.html" %}
-{% block title %}Alerts · FTPGuard{% endblock %}
+{% block title %}Alerts - FTPGuard{% endblock %}
 
 {% block content %}
-<div class="flex items-baseline justify-between mb-6">
+<div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="text-xs uppercase tracking-wider text-gray-500">alerts</h2>
-        <span class="text-xs text-gray-500">
-            {{ total }} total · page {{ page }} of {{ pages }}
-        </span>
+        <h1 class="text-xl font-semibold">Alerts</h1>
+        <p class="text-sm text-neutral-500 mt-1">{{ total }} total, page {{ page }} of {{ pages }}</p>
     </div>
 
-    <form action="{{ url_for('retrain') }}" method="post" class="inline" onsubmit="
+    <form action="{{ url_for('retrain') }}" method="post" onsubmit="
         const b = this.querySelector('button');
         b.textContent = 'Applying...';
         b.disabled = true;
         b.classList.add('opacity-50', 'cursor-not-allowed');
       ">
-        <button type="submit"
-            class="px-3 py-1 text-xs border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-gray-950 transition-colors">
+        <button type="submit" class="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700">
             Apply
         </button>
     </form>
 </div>
 
 {% if items %}
-<div class="border border-gray-800 bg-gray-900 overflow-x-auto">
+<div class="rounded-md border border-neutral-200 bg-white overflow-x-auto">
     <table class="min-w-full text-sm">
-        <thead class="text-xs text-gray-500 uppercase tracking-wider">
-            <tr class="border-b border-gray-800">
-                <th class="text-left px-4 py-3 font-normal">start</th>
-                <th class="text-left px-4 py-3 font-normal">src ip</th>
-                <th class="text-left px-4 py-3 font-normal">user</th>
-                <th class="text-right px-4 py-3 font-normal">events</th>
-                <th class="text-right px-4 py-3 font-normal">score</th>
-                <th class="text-left px-4 py-3 font-normal">rules</th>
-                <th class="text-left px-4 py-3 font-normal">status</th>
+        <thead class="text-neutral-500 bg-neutral-50">
+            <tr class="border-b border-neutral-200">
+                <th class="text-left px-4 py-3 font-medium">Start</th>
+                <th class="text-left px-4 py-3 font-medium">Source IP</th>
+                <th class="text-left px-4 py-3 font-medium">User</th>
+                <th class="text-right px-4 py-3 font-medium">Events</th>
+                <th class="text-right px-4 py-3 font-medium">Score</th>
+                <th class="text-left px-4 py-3 font-medium">Rules</th>
+                <th class="text-left px-4 py-3 font-medium">Status</th>
                 <th></th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-gray-800">
+        <tbody class="divide-y divide-neutral-100">
             {% for a in items %}
-            <tr class="hover:bg-gray-950 cursor-pointer {% if a.labeled %}opacity-50{% endif %}"
+            <tr class="hover:bg-neutral-50 cursor-pointer {% if a.labeled %}text-neutral-400{% endif %}"
                 onclick="window.location='{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}'">
 
-                <td class="px-4 py-2 text-gray-500 tabular-nums whitespace-nowrap">{{ a.start_time | ts }}</td>
-                <td class="px-4 py-2">{{ a.src_ip }}</td>
-                <td class="px-4 py-2">{{ a.user or '—' }}</td>
-                <td class="px-4 py-2 text-right tabular-nums">{{ a.n_events }}</td>
-                <td class="px-4 py-2 text-right tabular-nums font-semibold
-                    {% if a.score >= 0.6 %}text-red-500
-                    {% elif a.score >= 0.4 %}text-amber-500
-                    {% else %}text-gray-200{% endif %}">
+                <td class="px-4 py-2.5 text-neutral-500 whitespace-nowrap">{{ a.start_time | ts }}</td>
+                <td class="px-4 py-2.5 font-mono">{{ a.src_ip }}</td>
+                <td class="px-4 py-2.5">{{ a.user or '-' }}</td>
+                <td class="px-4 py-2.5 text-right tabular-nums">{{ a.n_events }}</td>
+                <td class="px-4 py-2.5 text-right tabular-nums font-medium
+                    {% if a.score >= 0.6 %}text-red-700
+                    {% elif a.score >= 0.4 %}text-amber-600{% endif %}">
                     {{ "%.2f"|format(a.score) }}
                 </td>
-                <td class="px-4 py-2 text-amber-500 text-xs">{{ a.rules or '' }}</td>
+                <td class="px-4 py-2.5 text-neutral-600">{{ a.rules or '' }}</td>
 
-                <td class="px-4 py-2">
+                <td class="px-4 py-2.5">
                     {% if a.labeled %}
-                    <span class="px-2 py-0.5 text-xs bg-green-500/20 text-green-400 font-semibold rounded">normal</span>
+                    <span class="px-2 py-0.5 text-xs rounded-full bg-green-50 text-green-700">normal</span>
                     {% else %}
-                    <span class="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 font-semibold rounded">attack</span>
+                    <span class="px-2 py-0.5 text-xs rounded-full bg-red-50 text-red-700">attack</span>
                     {% endif %}
                 </td>
-                <td class="px-4 py-2 text-left">
+                <td class="px-4 py-2.5 whitespace-nowrap" onclick="event.stopPropagation()">
                     <a href="{{ url_for('alert_detail', src_ip=a.src_ip, start_time=a.start_time) }}"
-                        class="px-2 py-1 text-xs border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400 transition-colors">
-                        view
+                        class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+                        View
                     </a>
                     {% if a.labeled %}
                     <form action="{{ url_for('unmark') }}" method="post" class="inline ml-1">
                         <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
                         <input type="hidden" name="start_time" value="{{ a.start_time }}">
                         <button type="submit"
-                            class="px-2 py-1 text-xs border border-gray-800 hover:border-red-500 hover:text-red-500 text-gray-400 transition-colors">
-                            mark attack
+                            class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+                            Mark attack
                         </button>
                     </form>
                     {% else %}
-                    <form action="{{ url_for('mark_normal') }}" method="post" class="inline">
+                    <form action="{{ url_for('mark_normal') }}" method="post" class="inline ml-1">
                         <input type="hidden" name="src_ip" value="{{ a.src_ip }}">
                         <input type="hidden" name="start_time" value="{{ a.start_time }}">
                         <button type="submit"
-                            class="px-2 py-1 text-xs border border-gray-800 hover:border-green-500 hover:text-green-500 text-gray-400 transition-colors ml-1">
-                            mark normal
+                            class="px-2 py-1 text-xs rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+                            Mark normal
                         </button>
                     </form>
                     {% endif %}
@@ -96,29 +92,24 @@
 {% if pages > 1 %}
 <div class="mt-4 flex gap-2 text-sm justify-center items-center">
     {% if page > 1 %}
-    <a href="?page={{ page - 1 }}"
-        class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
-        prev
-    </a>
+    <a href="?page={{ page - 1 }}" class="px-3 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-100">Previous</a>
     {% else %}
-    <span class="px-3 py-1 border border-gray-900 text-gray-700">prev</span>
+    <span class="px-3 py-1 rounded border border-neutral-200 text-neutral-300">Previous</span>
     {% endif %}
 
-    <span class="px-3 text-gray-500 tabular-nums">{{ page }} of {{ pages }}</span>
+    <span class="px-3 text-neutral-500 tabular-nums">{{ page }} of {{ pages }}</span>
 
-    {% if page < pages %} <a href="?page={{ page + 1 }}"
-        class="px-3 py-1 border border-gray-800 hover:border-amber-500 hover:text-amber-500 text-gray-400">
-        next
-        </a>
-        {% else %}
-        <span class="px-3 py-1 border border-gray-900 text-gray-700">next</span>
-        {% endif %}
+    {% if page < pages %}
+    <a href="?page={{ page + 1 }}" class="px-3 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-100">Next</a>
+    {% else %}
+    <span class="px-3 py-1 rounded border border-neutral-200 text-neutral-300">Next</span>
+    {% endif %}
 </div>
 {% endif %}
 
 {% else %}
-<div class="border border-gray-800 bg-gray-900 p-12 text-center text-gray-500 text-sm">
-    no alerts yet · run <span class="text-amber-500">ftp-ids watch</span> to start detecting
+<div class="rounded-md border border-neutral-200 bg-white p-12 text-center text-neutral-500 text-sm">
+    No alerts yet, run <code class="px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-800">ftp-ids watch</code> to start detecting
 </div>
 {% endif %}
 {% endblock %}

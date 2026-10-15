@@ -1,63 +1,53 @@
 {% extends "base.html" %}
-{% block title %}Live · FTPGuard{% endblock %}
+{% block title %}Live - FTPGuard{% endblock %}
 
 {% block content %}
 
 {% if not is_watching %}
 
-<div class="border border-gray-800 bg-gray-900 p-12 text-center">
-    <div class="text-amber-500 text-2xl mb-3">●</div>
-    <h2 class="text-lg text-white mb-2">No watcher running</h2>
-    <p class="text-sm text-gray-500 mb-6 max-w-md mx-auto">
-        Start the detector on the server to see live alerts appear here.
+<div class="rounded-md border border-neutral-200 bg-white p-12 text-center">
+    <h2 class="text-lg font-semibold mb-2">No watcher running</h2>
+    <p class="text-sm text-neutral-500 mb-6 max-w-md mx-auto">
+        Start the detector on the server to see live alerts here.
     </p>
-    <div class="inline-block px-4 py-2 border border-gray-800 bg-gray-950 text-amber-500 text-sm">
-        ftp-ids watch
-    </div>
+    <code class="px-3 py-1.5 rounded bg-neutral-100 text-neutral-800 text-sm">ftp-ids watch</code>
 </div>
 
 {% else %}
 
-<div class="flex items-baseline justify-between mb-6">
-    <div>
-        <h2 class="text-xs uppercase tracking-wider text-gray-500">live feed</h2>
-        <p class="text-xs text-gray-500 mt-1">polling every 2 seconds</p>
-    </div>
+<div class="mb-6">
+    <h1 class="text-xl font-semibold">Live feed</h1>
+    <p class="text-sm text-neutral-500 mt-1">Updates every 2 seconds</p>
 </div>
 
 <div class="grid grid-cols-3 gap-4 mb-6">
-    <div class="border border-gray-800 bg-gray-900 p-5">
-        <div class="text-xs uppercase tracking-wider text-gray-500">new since opened</div>
-        <div id="new-count" class="text-3xl text-amber-500 tabular-nums mt-2">0</div>
+    <div class="rounded-md border border-neutral-200 bg-white p-5">
+        <div class="text-sm text-neutral-500">New since opened</div>
+        <div id="new-count" class="text-2xl font-semibold tabular-nums mt-1">0</div>
     </div>
-    <div class="border border-gray-800 bg-gray-900 p-5">
-        <div class="text-xs uppercase tracking-wider text-gray-500">in feed</div>
-        <div id="total-count" class="text-3xl text-white tabular-nums mt-2">—</div>
+    <div class="rounded-md border border-neutral-200 bg-white p-5">
+        <div class="text-sm text-neutral-500">In feed</div>
+        <div id="total-count" class="text-2xl font-semibold tabular-nums mt-1">-</div>
     </div>
-    <div class="border border-gray-800 bg-gray-900 p-5">
-        <div class="text-xs uppercase tracking-wider text-gray-500">last poll</div>
-        <div id="last-poll" class="text-sm text-gray-300 mt-3">—</div>
+    <div class="rounded-md border border-neutral-200 bg-white p-5">
+        <div class="text-sm text-neutral-500">Last update</div>
+        <div id="last-poll" class="text-sm mt-2">-</div>
     </div>
 </div>
 
-<div class="grid grid-cols-12 gap-3 px-4 py-2 text-xs uppercase tracking-wider text-gray-500 border border-gray-800 border-b-0 bg-gray-900">
-    <div class="col-span-3">start</div>
-    <div class="col-span-2">src ip</div>
-    <div class="col-span-2">user</div>
-    <div class="col-span-1 text-right">events</div>
-    <div class="col-span-1 text-right">score</div>
-    <div class="col-span-3">rules</div>
-</div>
+<div class="rounded-md border border-neutral-200 bg-white overflow-hidden">
+    <div class="grid grid-cols-12 gap-3 px-4 py-3 text-sm font-medium text-neutral-500 bg-neutral-50 border-b border-neutral-200">
+        <div class="col-span-3">Start</div>
+        <div class="col-span-2">Source IP</div>
+        <div class="col-span-2">User</div>
+        <div class="col-span-1 text-right">Events</div>
+        <div class="col-span-1 text-right">Score</div>
+        <div class="col-span-3">Rules</div>
+    </div>
 
-<div id="feed" class="border border-gray-800 bg-gray-900 divide-y divide-gray-800">
-    <div class="p-6 text-center text-gray-500 text-sm">waiting for alerts…</div>
-</div>
-
-<div id="toast"
-    class="fixed top-4 right-4 z-50 bg-gray-900 border border-amber-500 px-4 py-3 max-w-sm
-           opacity-0 translate-x-8 transition-all duration-200">
-    <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">new alert</div>
-    <div id="toast-body" class="text-sm text-white"></div>
+    <div id="feed" class="divide-y divide-neutral-100">
+        <div class="p-6 text-center text-neutral-500 text-sm">Waiting for alerts...</div>
+    </div>
 </div>
 
 {% endif %}
@@ -68,25 +58,18 @@
 <script>
     const seen = new Set();
     let newCount = 0;
-    let notifsEnabled = false;
-
-    const toastEl = document.getElementById("toast");
-    const toastBody = document.getElementById("toast-body");
 
     function row(a) {
         const score = Number(a.score);
-        const scoreClass = score >= 0.6 ? "text-red-500" : score >= 0.4 ? "text-amber-500" : "text-gray-200";
-        const rules = a.rules
-            ? `<span class="text-amber-500 text-xs">${a.rules}</span>`
-            : `<span class="text-gray-700 text-xs">—</span>`;
+        const scoreClass = score >= 0.6 ? "text-red-700" : score >= 0.4 ? "text-amber-600" : "";
         return `
-            <div class="px-4 py-3 grid grid-cols-12 gap-3 items-center text-sm hover:bg-gray-950">
-                <div class="col-span-3 text-gray-500 text-xs tabular-nums">${a.start_time}</div>
-                <div class="col-span-2">${a.src_ip}</div>
-                <div class="col-span-2">${a.user || "—"}</div>
+            <div class="px-4 py-2.5 grid grid-cols-12 gap-3 items-center text-sm hover:bg-neutral-50">
+                <div class="col-span-3 text-neutral-500">${a.start_time.replace("T", " ")}</div>
+                <div class="col-span-2 font-mono">${a.src_ip}</div>
+                <div class="col-span-2">${a.user || "-"}</div>
                 <div class="col-span-1 text-right tabular-nums">${a.n_events}</div>
-                <div class="col-span-1 text-right tabular-nums font-semibold ${scoreClass}">${score.toFixed(2)}</div>
-                <div class="col-span-3">${rules}</div>
+                <div class="col-span-1 text-right tabular-nums font-medium ${scoreClass}">${score.toFixed(2)}</div>
+                <div class="col-span-3 text-neutral-600">${a.rules || "-"}</div>
             </div>`;
     }
 
@@ -101,15 +84,22 @@
 
             const feed = document.getElementById("feed");
             if (data.length === 0) {
-                feed.innerHTML = `<div class="p-6 text-center text-gray-500 text-sm">waiting for alerts…</div>`;
+                feed.innerHTML = `<div class="p-6 text-center text-neutral-500 text-sm">Waiting for alerts...</div>`;
                 return;
             }
 
+            for (const a of data) {
+                const key = `${a.src_ip}|${a.start_time}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    newCount++;
+                }
+            }
             document.getElementById("new-count").textContent = newCount;
 
             feed.innerHTML = data.map(row).join("");
         } catch (e) {
-            document.getElementById("last-poll").textContent = "error · " + e.message;
+            document.getElementById("last-poll").textContent = "Error: " + e.message;
         }
     }
 

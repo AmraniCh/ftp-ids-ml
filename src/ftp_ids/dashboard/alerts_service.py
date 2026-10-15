@@ -3,7 +3,7 @@ import ftp_ids.config as config
 
 def list_alerts(page=1, per_page=12):
     storage = Storage()
-    alerts = storage.load_alerts()
+    alerts = storage.load_alerts().fillna("")
     pool = storage.load_clean_pool()
 
     pool_keys = set()
@@ -34,7 +34,7 @@ def list_alerts(page=1, per_page=12):
 
 def get_alert(src_ip, start_time):
     storage = Storage()
-    alerts = storage.load_alerts()
+    alerts = storage.load_alerts().fillna("")
     pool = storage.load_clean_pool()
 
     for _, row in alerts.iterrows():
